@@ -20,7 +20,7 @@ return new class extends Migration
             ->constrained('products')
             ->cascadeOnDelete();
             $table->integer('quantity');
-            $table->enum('serving_type',['hot','cold'])->default('hot');
+            $table->string('serving_type', 50);
             $table->double('unit_price');
             $table->timestamps();
         });

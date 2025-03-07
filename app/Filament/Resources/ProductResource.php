@@ -54,9 +54,6 @@ class ProductResource extends Resource
                     ->required()
                     ->numeric()
                     ->prefix('Rp.'),
-                Forms\Components\Select::make('name_add_on')
-                    ->multiple()
-                    ->options(AddOn::all()->pluck('name', 'id')),
                 Forms\Components\Toggle::make('is_active')
                     ->required(),
                 Forms\Components\FileUpload::make('image')

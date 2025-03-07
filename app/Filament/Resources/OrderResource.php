@@ -13,6 +13,7 @@ use App\Models\PaymentMethod;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Repeater;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\Action;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\OrderResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -112,13 +113,16 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('id')->label('Order ID'),
+                Tables\Columns\TextColumn::make('name')->label('Nama Order')
                 ->searchable(),
                 Tables\Columns\TextColumn::make('total_price')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('paymentMethod.name')
                     ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('note')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('paid_amount')
                     ->numeric()
@@ -140,6 +144,11 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Action::make('invoice')
+                    ->label('Cetak')
+                    ->icon('heroicon-o-printer')
+                    ->url(fn ($record) => route('invoice.pdf', $record->id))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

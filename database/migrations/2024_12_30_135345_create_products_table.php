@@ -22,7 +22,6 @@ return new class extends Migration
             $table->longText('description');
             $table->integer('stock');
             $table->double('price');
-            $table->string('name_add_on');
             $table->boolean('is_active')->default(true);
             $table->string('image');
             $table->timestamps();

@@ -23,10 +23,17 @@ class Pos extends Component implements HasForms
     use InteractsWithForms;
     public $search = '';
     public $name_customer = '';
+    public $note = '';
     public $payment_method_id = 0;
     public $payment_methods;
     public $order_items = [];
     public $total_price;
+
+    public $serving_type = [];
+    protected $rules = [
+        'serving_type.*' => 'required|in:hot,cold',
+    ];
+
 
     public function render()
     {
@@ -47,25 +54,42 @@ class Pos extends Component implements HasForms
                             ->required()
                             ->maxLength(50)
                             ->default(fn() => $this->name_customer),
+                        Forms\Components\TextInput::make('note')
+                            ->default(fn() => $this->note),
+                        Forms\Components\TextInput::make('total_price')
+                            ->readOnly()
+                            ->numeric()
+                            ->default(fn() => $this->total_price),
+                        Forms\Components\Select::make('payment_method_id')
+                            ->required()
+                            ->options($this->payment_methods->pluck('name', 'id'))
+                            ->label('Payment Method'),
                     ]),
-                Forms\Components\TextInput::make('total_price')
-                    ->readOnly()
-                    ->numeric()
-                    ->default(fn() => $this->total_price),
-                Forms\Components\Select::make('payment_method_id')
-                    ->required()
-                    ->options($this->payment_methods->pluck('name', 'id'))
-                    ->label('Payment Method'),
+
             ]);
     }
 
     // Untuk simpan data sementara dari dalam session supaya disaat refresh data tidak hilang
     public function mount()
     {
+        $this->serving_type = []; // Pastikan ini selalu array
+
         if (session()->has('orderItems')) {
             $this->order_items = session('orderItems');
+
+            // Pastikan setiap produk memiliki key di serving_type
+            foreach ($this->order_items as $item) {
+                if (!array_key_exists($item['product_id'], $this->serving_type)) {
+                    $this->serving_type[$item['product_id']] = 'hot'; // Default ke 'hot'
+                }
+            }
+        } else {
+            $this->order_items = [];
         }
+
         $this->payment_methods = PaymentMethod::all();
+
+
         $this->form->fill(['payment_methods' => $this->payment_methods]);
     }
 
@@ -96,7 +120,7 @@ class Pos extends Component implements HasForms
                 'name' => $product->name,
                 'price' => $product->price,
                 'image_url' => $product->image_url,
-                'quantity' => 1
+                'quantity' => 1,
             ];
         }
 
@@ -177,6 +201,7 @@ class Pos extends Component implements HasForms
 
         $order = Order::create([
             'name' => $this->name_customer,
+            'note' => $this->note,
             'total_price' => $this->calculateTotal(),
             'payment_method_id' => $payment_method_id_temp
         ]);
@@ -186,7 +211,8 @@ class Pos extends Component implements HasForms
                 'order_id' => $order->id,
                 'product_id' => $item['product_id'],
                 'quantity' => $item['quantity'],
-                'unit_price' => $item['price']
+                'serving_type' => $this->serving_type[$item['product_id']] ?? 'hot', // Gunakan default jika kosong
+                'unit_price' => $item['price'],
             ]);
         }
 
@@ -194,6 +220,10 @@ class Pos extends Component implements HasForms
         session()->forget(['orderItems']);
 
         return redirect()->to('admin/orders');
+    }
 
+    public function hydrate()
+    {
+        logger('Serving Type:', $this->serving_type);
     }
 }

@@ -7,33 +7,24 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Product extends Model
 {
     use HasFactory;
     protected $fillable = [
         'name',
-        'slug', 
-        'description', 
-        'stock', 
+        'slug',
+        'description',
+        'stock',
         'price',
         'category_id',
-        'name_add_on',
-        'image', 
+        'image',
         'is_active',
     ];
-
-    protected $casts =[ 'name_add_on' => 'array' ];
 
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
-    }
-
-    public function addOns(): HasMany
-    {
-        return $this->hasMany(AddOn::class);
     }
 
     public static function generateUniqueSlug(string $name): string
@@ -56,5 +47,10 @@ class Product extends Model
     public function scopeSearch($query, $value)
     {
         $query->where("name", "like", "%{$value}%");
+    }
+
+    public function orderProducts(): HasMany
+    {
+        return $this->hasMany(OrderProduct::class);
     }
 }

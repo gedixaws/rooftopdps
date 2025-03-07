@@ -21,11 +21,6 @@ class Category extends Model
         return $this->hasMany(Product::class);
     }
 
-    public function addOns(): HasMany
-    {
-        return $this->hasMany(AddOn::class);
-    }
-
     public static function generateUniqueSlug(string $name): String
     {
         $slug = Str::slug($name);

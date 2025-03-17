@@ -24,8 +24,12 @@ class ProductFavorite extends BaseWidget
             ->query($productQuery)
             ->columns([
                 Tables\Columns\ImageColumn::make('image'),
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('product_name')
+                    ->label('Product')
+                    ->searchable(query: function ($query, $search) {
+                        return $query->whereHas('food', fn($q) => $q->where('name', 'like', "%{$search}%"))
+                            ->orWhereHas('drink', fn($q) => $q->where('name', 'like', "%{$search}%"));
+                    }),
                 Tables\Columns\TextColumn::make('order_products_count')
                     ->label('Dipesan')
                     ->numeric()

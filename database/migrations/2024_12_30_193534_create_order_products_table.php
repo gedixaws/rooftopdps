@@ -14,14 +14,22 @@ return new class extends Migration
         Schema::create('order_products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')
-            ->constrained('orders')
-            ->cascadeOnDelete();
+                ->constrained('orders')
+                ->onDelete('cascade');
             $table->foreignId('product_id')
-            ->constrained('products')
-            ->cascadeOnDelete();
+                ->nullable()
+                ->constrained('products')
+                ->nullOnDelete();
+            $table->foreignId('food_variant_id')
+                ->nullable()
+                ->constrained('food_variants')
+                ->nullOnDelete();
+            $table->foreignId('drink_size_id')
+                ->nullable()
+                ->constrained('drink_sizes')
+                ->nullOnDelete();
             $table->integer('quantity');
-            $table->string('serving_type', 50);
-            $table->double('unit_price');
+            $table->decimal('unit_price', 10, 2);
             $table->timestamps();
         });
     }

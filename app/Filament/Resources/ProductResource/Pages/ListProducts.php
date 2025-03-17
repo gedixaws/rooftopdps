@@ -4,12 +4,12 @@ namespace App\Filament\Resources\ProductResource\Pages;
 
 use Filament\Actions;
 use Filament\Actions\Action;
-use Filament\Resources\Pages\ListRecords;
-use App\Filament\Resources\ProductResource;
 use App\Imports\ProductImport;
-use Filament\Forms\Components\FileUpload;
 use Maatwebsite\Excel\Facades\Excel;
 use Filament\Notifications\Notification;
+use Filament\Forms\Components\FileUpload;
+use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\ProductResource;
 
 class ListProducts extends ListRecords
 {

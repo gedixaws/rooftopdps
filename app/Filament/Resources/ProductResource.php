@@ -16,49 +16,72 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProductResource\RelationManagers;
+use App\Models\Food;
+use App\Models\Drink;
 
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    protected static ?string $navigationIcon = 'heroicon-m-building-storefront';
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
     protected static ?string $cluster = Products::class;
 
     protected static ?int $navigationSort = 1;
 
+    protected static ?string $label = 'Menu';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->afterStateUpdated(function (Set $set, $state){
-                        $set('slug', Product::generateUniqueSlug($state));
-                    })
-                    ->live(onBlur: true)
-                    ->maxLength(50),
-                Forms\Components\Select::make('category_id')
-                    ->options(Category::all()->pluck('name', 'id')),
-                Forms\Components\TextInput::make('slug')
-                    ->required()
-                    ->readOnly()
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('description')
-                    ->required()
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('stock')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('price')
-                    ->required()
-                    ->numeric()
-                    ->prefix('Rp.'),
-                Forms\Components\Toggle::make('is_active')
-                    ->required(),
-                Forms\Components\FileUpload::make('image')
-                    ->image()
-                    ->required(),
+                Forms\Components\Section::make('Informasi Produk')
+                    ->schema([
+                        Forms\Components\Select::make('food_id')
+                            ->label('Food')
+                            ->options(Food::pluck('name', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->nullable()
+                            ->reactive()
+                            ->unique(ignoreRecord: true) // Hindari duplikasi food_id
+                            ->afterStateUpdated(fn($set) => $set('drink_id', null))
+                            ->requiredWithout('drink_id'), // Wajib jika drink_id kosong
+
+                        Forms\Components\Select::make('drink_id')
+                            ->label('Drink')
+                            ->options(Drink::pluck('name', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->nullable()
+                            ->unique(ignoreRecord: true) // Hindari duplikasi drink_id
+                            ->afterStateUpdated(fn($set) => $set('food_id', null)) // Reset food jika memilih drink
+                            ->disabled(fn($get) => $get('food_id') !== null) // Disable jika food dipilih
+                            ->requiredWithout('food_id'), // Wajib jika food_id kosong
+
+                        Forms\Components\TextInput::make('stock')
+                            ->label('Stock')
+                            ->numeric()
+                            ->minValue(0)
+                            ->required(),
+
+                        Forms\Components\Toggle::make('is_active')
+                            ->label('Aktifkan Produk')
+                            ->default(true),
+
+                        Forms\Components\Placeholder::make('warning')
+                            ->content('Harap pilih salah satu: Food atau Drink!')
+                            ->hidden(fn($get) => $get('food_id') || $get('drink_id'))
+                    ]),
+
+                Forms\Components\Section::make('Gambar Produk')
+                    ->schema([
+                        Forms\Components\FileUpload::make('image')
+                            ->label('Upload Gambar')
+                            ->image()
+                            ->directory('products')
+                            ->required(),
+                    ]),
             ]);
     }
 
@@ -66,44 +89,44 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image'),
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable(),
+                Tables\Columns\ImageColumn::make('image')
+                    ->label('Gambar')
+                    ->circular(),
+                Tables\Columns\TextColumn::make('product_name')
+                    ->label('Product')
+                    ->getStateUsing(fn($record) => $record->food?->name ?? $record->drink?->name ?? '-')
+                    ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('category.name')
-                    ->numeric()
-                    ->sortable(),
-                // Tables\Columns\TextColumn::make('slug')
-                //     ->searchable(),
-                Tables\Columns\TextColumn::make('stock')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('price')
-                    ->money('IDR', true)
+                    ->label('Price')
+                    ->getStateUsing(fn($record) => $record->food?->price ?? $record->drink?->price ?? '-')
+                    ->money('IDR')
                     ->sortable(),
-                Tables\Columns\IconColumn::make('is_active')
-                    ->boolean(),
+                Tables\Columns\TextColumn::make('stock')
+                    ->label('Stock')
+                    ->sortable(),
+                Tables\Columns\BooleanColumn::make('is_active')
+                    ->label('Status'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Dibuat Pada')
+                    ->dateTime('d M Y, H:i')
+                    ->sortable(),
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('is_active')
+                    ->label('Hanya Produk Aktif')
+                    ->query(fn($query) => $query->where('is_active', true)),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

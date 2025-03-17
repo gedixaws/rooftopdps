@@ -12,25 +12,29 @@ class Category extends Model
     use HasFactory;
     protected $fillable = [
         'name',
-        'slug',
-        'description',
-        'is_active',
+        'slug'
+
     ];
-    public function products(): HasMany
+
+    public function foods()
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(Food::class);
     }
 
-    public static function generateUniqueSlug(string $name): String
+    public function drinks()
+    {
+        return $this->hasMany(Drink::class);
+    }
+
+    public static function generateUniqueSlug(string $name): string
     {
         $slug = Str::slug($name);
         $originalSlug = $slug;
         $counter = 1;
-        while (self::where ('slug', $slug)->exists()) {
+        while (self::where('slug', $slug)->exists()) {
             $slug = $originalSlug . '-' . $counter;
             $counter++;
         }
-
         return $slug;
     }
 }

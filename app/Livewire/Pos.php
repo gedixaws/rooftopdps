@@ -3,19 +3,21 @@
 namespace App\Livewire;
 
 use Filament\Forms;
-use App\Models\Product;
-use App\Models\PaymentMethod;
+use App\Models\User;
 use App\Models\Order;
-use App\Models\OrderProduct;
-
+use App\Models\Product;
 use Filament\Forms\Set;
+
 use Livewire\Component;
 use Filament\Forms\Form;
+use App\Models\OrderProduct;
 
 
+use App\Models\PaymentMethod;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use App\Notifications\OrderCreatedNotification;
 use Filament\Forms\Concerns\InteractsWithForms;
 
 class Pos extends Component implements HasForms
@@ -216,6 +218,10 @@ class Pos extends Component implements HasForms
             ]);
         }
 
+        $user = auth()->user();
+        $user->notify(new OrderCreatedNotification($order));
+        $this->dispatch('newNotification');
+       
         $this->order_items = [];
         session()->forget(['orderItems']);
 

@@ -127,7 +127,7 @@
                                                                         </button>
                                                                     </div>
                                                                     <button type="button"
-                                                                        class="font-medium text-indigo-600 hover:text-indigo-500">Remove</button>
+                                                                        class="font-medium text-black hover:text-gray-900">Remove</button>
                                                                 </div>
                                                             </div>
                                                         </li>
@@ -137,18 +137,30 @@
                                         </div>
 
                                         <!-- Checkout -->
-                                        <div class="border-t border-gray-200 px-4 py-6 sm:px-6">
+                                        <div class="px-4 py-6 sm:px-6 border-b border-gray-200">
+                                            <div class="mb-4">
+                                                <label for="nama" class="block text-sm font-medium text-gray-700">Nama</label>
+                                                <input type="text" id="nama" name="nama"
+                                                    class="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black max-sm:text-xs"
+                                                    placeholder="Masukkan nama Anda">
+                                            </div>
+                                            <div class="mb-4">
+                                                <label for="catatan" class="block text-sm font-medium text-gray-700">Catatan</label>
+                                                <textarea id="catatan" name="catatan"
+                                                    class="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black max-sm:text-xs"
+                                                    rows="1" placeholder="Tambahkan catatan (opsional)"></textarea>
+                                            </div>
                                             <div class="flex justify-between text-base font-medium text-gray-900">
                                                 <p>Subtotal</p>
                                                 <p>$262.00</p>
                                             </div>
-                                            <div class="mt-6">
+                                            <div class="mt-4">
                                                 <a href="#"
-                                                    class="flex items-center justify-center rounded-md bg-indigo-600 px-6 py-3 text-base font-medium text-white hover:bg-indigo-700">Checkout</a>
+                                                    class="flex items-center justify-center rounded-md bg-black px-6 py-3 text-base font-medium text-white hover:bg-gray-900">Checkout</a>
                                             </div>
                                             <div class="mt-6 flex justify-center text-center text-sm text-gray-500">
                                                 <button type="button"
-                                                    class="font-medium text-indigo-600 hover:text-indigo-500"
+                                                    class="font-medium text-black hover:text-gray-700"
                                                     @click="open = false">Continue Shopping →</button>
                                             </div>
                                         </div>
@@ -187,7 +199,7 @@
                     <div class="sm:flex-1">
 
                         <input type="Text" placeholder="#1234..."
-                            class="w-full rounded-md border-gray-200 bg-white p-3 text-gray-700 shadow-xs transition focus:border-white focus:ring-3 focus:ring-yellow-400 focus:outline-hidden" />
+                            class="w-full rounded-md border-gray-200 bg-white p-3 text-gray-700 shadow-xs transition focus:border-white focus:ring-3 focus:ring-black focus:outline-hidden" />
                     </div>
 
                     <button type="submit"

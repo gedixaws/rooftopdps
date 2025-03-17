@@ -21,8 +21,12 @@ class ProductAlert extends BaseWidget
             )
             ->columns([
                 Tables\Columns\ImageColumn::make('image'),
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('product_name')
+                    ->label('Product')
+                    ->searchable(query: function ($query, $search) {
+                        return $query->whereHas('food', fn($q) => $q->where('name', 'like', "%{$search}%"))
+                                     ->orWhereHas('drink', fn($q) => $q->where('name', 'like', "%{$search}%"));
+                    }),
                 Tables\Columns\BadgeColumn::make('stock')
                     ->label('stok')
                     ->numeric()

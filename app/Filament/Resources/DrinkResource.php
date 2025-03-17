@@ -4,39 +4,38 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
-use Filament\Forms\Set;
-use App\Models\Category;
+use App\Models\Drink;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Clusters\ManagementProducts;
-use App\Filament\Resources\CategoryResource\Pages;
+use App\Filament\Resources\DrinkResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\CategoryResource\RelationManagers;
+use App\Filament\Resources\DrinkResource\RelationManagers;
 
-class CategoryResource extends Resource
+class DrinkResource extends Resource
 {
-    protected static ?string $model = Category::class;
+    protected static ?string $model = Drink::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?string $cluster = ManagementProducts::class;
-
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('category_id')
+                    ->relationship('category', 'name')
+                    ->required(),
                 Forms\Components\TextInput::make('name')
-                    ->afterStateUpdated(function (Set $set, $state){
-                        $set('slug', Category::generateUniqueSlug($state));
-                    })
-                    ->required()
-                    ->live(onBlur: true)
-                    ->maxLength(50),
-                Forms\Components\TextInput::make('slug')
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('price')
+                    ->numeric()
+                    ->nullable() // untuk tidak ada ukuran
+                    ->required()
+                    ->visible(fn($record) => !$record || !$record->sizes()->exists()), //tampil jika tidak ada ukuran
             ]);
     }
 
@@ -44,20 +43,15 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('category.name')
+                    ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                Tables\Columns\TextColumn::make('name')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('price') // Harga otomatis dari getPriceAttribute()
+                    ->label('Price')
+                    ->sortable(),
             ])
             ->filters([
                 //
@@ -65,7 +59,7 @@ class CategoryResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -84,9 +78,9 @@ class CategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCategories::route('/'),
-            'create' => Pages\CreateCategory::route('/create'),
-            'edit' => Pages\EditCategory::route('/{record}/edit'),
+            'index' => Pages\ListDrinks::route('/'),
+            'create' => Pages\CreateDrink::route('/create'),
+            'edit' => Pages\EditDrink::route('/{record}/edit'),
         ];
     }
 }

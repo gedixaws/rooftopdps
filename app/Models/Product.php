@@ -12,31 +12,21 @@ class Product extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'name',
-        'slug',
-        'description',
+        'food_id',
+        'drink_id',
         'stock',
-        'price',
-        'category_id',
         'image',
         'is_active',
     ];
 
-    public function category(): BelongsTo
+    public function food()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Food::class);
     }
 
-    public static function generateUniqueSlug(string $name): string
+    public function drink()
     {
-        $slug = Str::slug($name);
-        $originalSlug = $slug;
-        $counter = 1;
-        while (self::where('slug', $slug)->exists()) {
-            $slug = $originalSlug . '-' . $counter;
-            $counter++;
-        }
-        return $slug;
+        return $this->belongsTo(Drink::class);
     }
 
     public function getImageUrlAttribute(): string
@@ -44,13 +34,13 @@ class Product extends Model
         return $this->image ? url('storage/' . $this->image) : null;
     }
 
-    public function scopeSearch($query, $value)
-    {
-        $query->where("name", "like", "%{$value}%");
-    }
-
     public function orderProducts(): HasMany
     {
         return $this->hasMany(OrderProduct::class);
+    }
+
+    public function getProductNameAttribute()
+    {
+        return $this->food?->name ?? $this->drink?->name ?? 'Tidak diketahui';
     }
 }

@@ -43,4 +43,16 @@ class Product extends Model
     {
         return $this->food?->name ?? $this->drink?->name ?? 'Tidak diketahui';
     }
+
+    public function foodVariants()
+    {
+        return $this->food ? $this->food->variants() : null;
+    }
+
+    public function drinkSizes()
+    {
+        return $this->drink ? $this->drink->sizes() : null;
+    }
+
+    
 }

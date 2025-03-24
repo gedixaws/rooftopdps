@@ -4,7 +4,6 @@ use App\Exports\TemplateExport;
 use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\CartController;
 
 Route::get('/', function () {
     return view('welcome');

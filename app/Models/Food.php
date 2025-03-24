@@ -26,7 +26,7 @@ class Food extends Model
 
     public function product()
     {
-        return $this->hasMany(Product::class);
+        return $this->hasOne(Product::class);
     }
 
     public function getPriceAttribute()

@@ -14,27 +14,31 @@ class OrderProduct extends Model
 
     use HasFactory;
     protected $fillable = [
-        'order_id', 
-        'food_variant_id', 
+        'order_id',
+        'food_variant_id',
         'drink_size_id',
         'product_id',
         'quantity',
         'unit_price',
     ];
 
-    public function order() {
+    public function order()
+    {
         return $this->belongsTo(Order::class);
     }
 
-    public function product() {
+    public function product()
+    {
         return $this->belongsTo(Product::class);
     }
 
-    public function foodVariant() {
+    public function foodVariant()
+    {
         return $this->belongsTo(FoodVariant::class);
     }
 
-    public function drinkSize() {
+    public function drinkSize()
+    {
         return $this->belongsTo(DrinkSize::class);
     }
 

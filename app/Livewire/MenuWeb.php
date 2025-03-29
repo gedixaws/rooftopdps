@@ -2,14 +2,20 @@
 
 namespace App\Livewire;
 
-use App\Models\Product;
+use App\Models\Food;
+use App\Models\Drink;
 use Livewire\Component;
 use App\Models\Category;
+use App\Models\DrinkSize;
+use App\Models\FoodVariant;
 use Illuminate\Support\Facades\Session;
 
 class MenuWeb extends Component
 {
     public $categories;
+    public $cart = [];
+
+    protected $listeners = ['cartUpdated' => 'updateCart'];
 
     public function mount()
     {
@@ -18,43 +24,78 @@ class MenuWeb extends Component
             'foods.variants',
             'drinks.sizes'
         ])->get();
+
+        $this->cart = session()->get('cart', []);
     }
 
-    public function addToCart($productId, $variantId = null, $sizeId = null)
+    public function addToCart($type, $productId, $variantOrSizeId = null)
     {
-        dd("Product ID: $productId", "Variant ID: $variantId", "Size ID: $sizeId");
-        $product = Product::find($productId);
+        $cart = session()->get('cart', []);
+    
+        if ($type === 'food') {
+            $product = Food::with('product')->find($productId);
+            if (!$product) return;
         
-        if (!$product || $product->stock <= 0) {
-            session()->flash('error', 'Produk tidak tersedia atau stok habis.');
-            return;
-        }
-
-        $itemKey = collect($this->orderItems)->search(fn ($item) => 
-            $item['product_id'] == $productId &&
-            $item['variant_id'] == $variantId &&
-            $item['size_id'] == $sizeId
-        );
-
-        if ($itemKey !== false) {
-            $this->orderItems[$itemKey]['quantity']++;
+            if ($variantOrSizeId) {
+                $variant = FoodVariant::find($variantOrSizeId);
+                if (!$variant) return;
+        
+                $itemId = "variant_{$variant->id}";
+                $name = "{$product->name} - {$variant->name}";
+                $price = $variant->price;
+            } else {
+                $itemId = "food_{$product->id}";
+                $name = $product->name;
+                $price = $product->product->price ?? $product->price ?? 0;
+            }
+        
+            $cart[$itemId] = [
+                'id' => $product->product->id ?? $product->id, 
+                'name' => $name,
+                'price' => $price,
+                'quantity' => ($cart[$itemId]['quantity'] ?? 0) + 1,
+                'variant_id' => $variantOrSizeId ?? null, 
+                'size_id' => null,
+                'image' => $product->product->image_url ?? asset('default.jpg'),
+            ];
         } else {
-            $this->orderItems[] = [
-                'product_id' => $productId,
-                'variant_id' => $variantId,
-                'size_id' => $sizeId,
-                'name' => $product->name,
-                'price' => $variantId ? $product->variants->find($variantId)->price :
-                          ($sizeId ? $product->sizes->find($sizeId)->price : $product->price),
-                'quantity' => 1,
+            $product = Drink::with('product')->find($productId);
+            if (!$product) return;
+        
+            if ($variantOrSizeId) {
+                $size = DrinkSize::find($variantOrSizeId);
+                if (!$size) return;
+        
+                $itemId = "size_{$size->id}";
+                $name = "{$product->name} - {$size->size}";
+                $price = $size->price;
+            } else {
+                $itemId = "drink_{$product->id}";
+                $name = $product->name;
+                $price = $product->product->price ?? $product->price ?? 0;
+            }
+        
+            $cart[$itemId] = [
+                'id' => $product->product->id ?? $product->id, 
+                'name' => $name,
+                'price' => $price,
+                'quantity' => ($cart[$itemId]['quantity'] ?? 0) + 1,
+                'variant_id' => null,
+                'size_id' => $variantOrSizeId ?? null, 
+                'image' => $product->product->image_url ?? asset('default.jpg'),
             ];
         }
+    
+        session()->put('cart', $cart); // Simpan cart ke session
+        $this->dispatch('cartUpdated'); // Trigger Livewire update
+    }    
 
-        Session::put('orderItems', $this->orderItems);
-        $this->emit('cartUpdated');
-        
-        
+    public function updateCart()
+    {
+        // Perbarui data cart setiap kali event cartUpdated diterima
+        $this->cart = session()->get('cart', []);
     }
+
 
     public function render()
     {

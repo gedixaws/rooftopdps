@@ -4,6 +4,7 @@ use App\Exports\TemplateExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\TransactionController;
 
 Route::get('/', function () {
@@ -21,4 +22,6 @@ Route::get('/download-template', function(){
 })->name('download-template');
 
 Route::get('/invoice/{orderId}', [InvoiceController::class, 'generatePDF'])->name('invoice.pdf');
+
+Route::post('/midtrans/payment', [MidtransController::class, 'notificationHandler']);
 

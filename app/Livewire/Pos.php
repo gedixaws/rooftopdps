@@ -127,10 +127,10 @@ class Pos extends Component implements HasForms
         }
 
         session()->put('orderItems', $this->order_items);
-        Notification::make()
-            ->title('Produk Ditambahkan ke Keranjang')
-            ->success()
-            ->send();
+        // Notification::make()
+        //     ->title('Produk Ditambahkan ke Keranjang')
+        //     ->success()
+        //     ->send();
     }
 
     public function loadOrderItems($orderItems)
@@ -218,9 +218,9 @@ class Pos extends Component implements HasForms
             ]);
         }
 
-        $user = auth()->user();
-        $user->notify(new OrderCreatedNotification($order));
-        $this->dispatch('newNotification');
+        // $user = auth()->user();
+        // $user->notify(new OrderCreatedNotification($order));
+        // $this->dispatch('newNotification');
        
         $this->order_items = [];
         session()->forget(['orderItems']);

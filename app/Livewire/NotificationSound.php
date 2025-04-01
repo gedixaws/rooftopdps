@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Filament\Facades\Filament;
 use Illuminate\Notifications\DatabaseNotification;
 
 class NotificationSound extends Component
@@ -19,7 +20,7 @@ class NotificationSound extends Component
             ->count();
 
         if ($this->unreadCount > 0) {
-            $this->dispatchBrowserEvent('play-notification-sound');
+            $this->dispatch('play-notification-sound');
         }
     }
     public function render()

@@ -110,6 +110,8 @@
                 </div>
             </div>
         @endforeach
+      
     </div>
     <!-- End Product List Component -->
+ 
 </div>

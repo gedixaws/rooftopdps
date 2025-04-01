@@ -22,23 +22,29 @@ class FilamentServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Filament::registerRenderHook('scripts.end', function () {
-            return <<<'HTML'
-            <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    function playNotificationSound() {
-                        let audio = new Audio('/audio/notification.mp3');
-                        audio.play();
-                    }
-
-                    // Cek apakah event notify dipanggil
-                    Livewire.on('notify', () => {
-                        console.log("Livewire notify event triggered!"); // Debugging
-                        playNotificationSound();
+        Filament::serving(function () {
+            Filament::registerRenderHook('scripts.end', function () {
+                return <<<'HTML'
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        function playNotificationSound() {
+                            let audio = new Audio('../audio/notification.mp3');
+                            audio.play();
+                        }
+    
+                        // Tunggu Livewire ter-load sepenuhnya
+                        document.addEventListener("livewire:load", () => {
+                            // Mendengarkan event 'play-notification-sound' dari Livewire
+                            window.addEventListener('play-notification-sound', function() {
+                                console.log("Notification sound triggered!"); // Debugging
+                                playNotificationSound();
+                            });
+                        });
                     });
-                });
-            </script>
-            HTML;
+                </script>
+                HTML;
+            });
         });
     }
+    
 }

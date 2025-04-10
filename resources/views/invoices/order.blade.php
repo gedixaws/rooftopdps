@@ -102,31 +102,39 @@
         <p>WiFi: Rooftop | Pass: NakKodya</p>
 
         <div class="info">
-            <p>Invoice #{{ $order->id }}</p>
-            <p>Tanggal: {{ $order->created_at->format('d M Y') }}</p>
-            <p>Pelanggan: {{ $order->name }}</p>
+            <p style="font-size: 13px; font-weight: bold; text-transform: uppercase; margin-bottom: 3px;">
+                === ID Transaksi: {{ $order->transaction_id }} ===
+            </p>
+            <p>Tanggal: {{ $order->created_at->format('d F Y H:i') }}</p>
+            <p>Pelanggan: {{ Str::before($order->name, '-') }}</p>
         </div>
 
         <table>
             <thead>
                 <tr>
                     <th>Produk</th>
-                    <th>Note</th>
-                    <th>Jenis</th>
+                    <th>Varian</th>
                     <th>Qty</th>
                     <th>Harga</th>
                     <th>Total</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($order->orderProducts as $item)
+                @foreach ($order->orderProducts as $orderProduct)
                     <tr>
-                        <td>{{ $item->product->name }}</td>
-                        <td>{{ $item->order->note }}</td>
-                        <td>{{ $item->serving_type }}</td>
-                        <td>{{ $item->quantity }}</td>
-                        <td>Rp {{ number_format($item->product->price, 0, ',', '.') }}</td>
-                        <td>Rp {{ number_format($item->quantity * $item->product->price, 0, ',', '.') }}</td>
+                        <td>{{ $orderProduct->product->product_name }}</td>
+                        <td>
+                            @if ($orderProduct->foodVariant)
+                                {{ $orderProduct->foodVariant->name }}
+                            @elseif($orderProduct->drinkSize)
+                                {{ $orderProduct->drinkSize->size }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td>{{ $orderProduct->quantity }}</td>
+                        <td>Rp {{ number_format($orderProduct->unit_price, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($orderProduct->quantity * $orderProduct->unit_price, 0, ',', '.') }}</td>
                     </tr>
                 @endforeach
             </tbody>

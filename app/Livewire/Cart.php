@@ -2,13 +2,14 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Str;
 use Midtrans\Snap;
 use Midtrans\Config;
 use App\Models\Order;
+use App\Models\Product;
+use Livewire\Component;
+use Illuminate\Support\Str;
 use App\Models\OrderProduct;
+use Illuminate\Support\Facades\Session;
 
 class Cart extends Component
 {
@@ -37,14 +38,17 @@ class Cart extends Component
             session()->put('cart', $cart); // Perbarui session
             $this->cart = $cart; // Perbarui properti Livewire
             $this->dispatch('cartUpdated'); // Emit event agar UI diperbarui
+            $this->dispatch('showAlert_Remove'); // Emit event untuk notifikasi
         }
     }
 
     public function initiatePayment()
     {
         if (empty($this->cart)) {
-            session()->flash('error', 'Keranjang belanja kosong.');
-            return;
+            return $this->dispatch('showAlert_keranjang_kosong');
+        }
+        if (empty($this->name)) {
+            return $this->dispatch('showAlert_keranjang_kosong2');
         }
 
         // Konfigurasi Midtrans
@@ -53,11 +57,19 @@ class Cart extends Component
         Config::$isSanitized = config('midtrans.is_sanitized');
         Config::$is3ds = config('midtrans.is_3ds');
 
+        // Cek stok semua item
+        foreach ($this->cart as $item) {
+            $product = Product::find($item['id']);
+            if (!$product || $product->stock < $item['quantity']) {
+                return $this->dispatch('showAlert_stok_kurang', message: $item['name'] . " stok kosong. Silahkan pilih produk lain.");
+            }
+        }
+
         // Generate Transaction ID
         $transactionId = Order::generateTransactionId();
-
-        // Hitung total harga
+        $slug = Str::slug($transactionId, '-');
         $totalPrice = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $this->cart));
+
 
         // Buat parameter Midtrans
         $transactionDetails = [
@@ -72,41 +84,15 @@ class Cart extends Component
 
         // Dapatkan token pembayaran dari Midtrans
         $snapToken = Snap::getSnapToken($transactionDetails);
-
-        // Kirim event ke frontend
-        $this->dispatch('midtransPayment', ['token' => $snapToken]);
-    }
-
-    public function paymentSuccess($transactionResul = [])
-    {
-        if (!isset($transactionResult['transaction_status'])) {
-            session()->flash('error', 'Data transaksi tidak valid.');
-            return;
-        }
-    
-        if ($transactionResult['transaction_status'] !== 'capture' && $transactionResult['transaction_status'] !== 'settlement') {
-            session()->flash('error', 'Pembayaran gagal atau belum selesai.');
-            return;
-        }
-
-        // Generate Transaction ID & Slug
-        $transactionId = $transactionResult['order_id'];
-        $slug = Str::slug($transactionId, '-');
-
-        // Hitung total harga
-        $totalPrice = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $this->cart));
-
-        // Simpan ke tabel orders
         $order = Order::create([
             'transaction_id' => $transactionId,
             'slug' => $slug,
             'total_price' => $totalPrice,
-            'name' => $this->name,
+            'name' => $this->name . "-" . date('Y-m-d H:i:s'),
             'note' => $this->note,
             'payment_method_id' => 3, // Midtrans
             'paid_amount' => $totalPrice,
             'change_amount' => 0,
-            'payment_status' => 'paid',
         ]);
 
         // Simpan ke tabel order_products
@@ -114,27 +100,20 @@ class Cart extends Component
             OrderProduct::create([
                 'order_id' => $order->id,
                 'product_id' => $item['id'],
-                'variant_id' => $item['variant_id'] ?? null,
-                'size_id' => $item['size_id'] ?? null,
+                'food_variant_id' => $item['food_variant_id'] ?? null,
+                'drink_size_id' => $item['drink_size_id'] ?? null,
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['price'],
             ]);
         }
 
-        // Kosongkan cart setelah checkout
-        session()->forget('cart');
-        $this->cart = [];
-        $this->name = '';
-        $this->note = '';
-
-        $this->dispatch('cartUpdated');
-        session()->flash('success', 'Pembayaran berhasil dan pesanan dicatat!');
+        // Kirim event ke frontend
+        $this->dispatch('midtransPayment', ['token' => $snapToken]);
     }
+
 
     public function render()
     {
         return view('livewire.cart');
     }
-
-    
 }

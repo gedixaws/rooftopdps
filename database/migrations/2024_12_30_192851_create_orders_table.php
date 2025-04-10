@@ -24,6 +24,8 @@ return new class extends Migration
                 ->nullOnDelete();
             $table->double('paid_amount')->nullable();
             $table->double('change_amount')->nullable();
+            $table->enum('status', ['pending', 'paid', 'failed'])->default('pending');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

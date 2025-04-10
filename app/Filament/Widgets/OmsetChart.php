@@ -11,6 +11,7 @@ use Filament\Widgets\ChartWidget;
 class OmsetChart extends ChartWidget
 {
     protected static ?string $heading = 'Omset';
+    protected static ?string $pollingInterval = '60s';
     protected static ?int $sort = 1;
     public ?string $filter = 'today';
     protected static string $color = 'success';
@@ -42,12 +43,14 @@ class OmsetChart extends ChartWidget
             ]
         };
 
-        $query = Trend::model(Order::class)
+        $trend = Order::where('status', 'paid');
+
+        $query = Trend::query($trend)
             ->between(
                 start: $dateRange['start'],
                 end: $dateRange['end'],
             );
-        
+
         if ($dateRange['period'] === 'perHour') {
             $data = $query->perHour();
         } elseif ($dateRange['period'] === 'perDay') {
@@ -61,7 +64,7 @@ class OmsetChart extends ChartWidget
         $labels = $data->map(function (TrendValue $value) use ($dateRange) {
             $date = Carbon::parse($value->date);
 
-            if($dateRange['period'] === 'perHour') {
+            if ($dateRange['period'] === 'perHour') {
                 return $date->format('H:i');
             } elseif ($dateRange['period'] === 'perDay') {
                 return $date->format('d M');
@@ -73,7 +76,7 @@ class OmsetChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Omset '. $this->getFilters()[$activeFilter],
+                    'label' => 'Omset ' . $this->getFilters()[$activeFilter],
                     'data' => $data->map(fn(TrendValue $value) => $value->aggregate),
                 ],
             ],

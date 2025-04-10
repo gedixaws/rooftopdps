@@ -8,9 +8,14 @@
     <title>Rooftop Denpasar</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @livewireStyles
-    <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+
 </head>
+<style>
+    [x-cloak] {
+        display: none !important;
+    }
+</style>
 
 <body>
     <!-- Navbar Component -->
@@ -20,22 +25,25 @@
 
             <!-- Logo -->
             <div class="flex items-center space-x-2">
-                <img src="images/rooftop.png" alt="Logo" class="h-10">
-                <h1 class="text-2xl font-bold text-black sm:text-2xl dark:text-black max-sm:text-sm">ROOFTOP DENPASAR
-                </h1>
-                <p class=" text-sm text-gray-500 dark:text-gray-400">
-                </p>
+                <a href="{{ route('home') }}" class="flex items-center space-x-2">
+                    <img src="/images/rooftop.png" alt="Logo" class="h-10">
+                    <div>
+                        <h1 class="text-2xl font-bold text-black sm:text-2xl dark:text-black max-sm:text-sm">
+                            ROOFTOP DENPASAR
+                        </h1>
+                    </div>
+                </a>
             </div>
 
             <div class="flex items-center gap-2 sm:gap-4">
                 <!-- Tombol Order Yuk -->
-                <button
+                <a href=" {{ route('home') }}"
                     class="flex items-center justify-center rounded-lg bg-white px-5 py-3 text-sm font-medium text-black border border-black shadow-sm transition hover:bg-gray-100 focus:ring-1 max-sm:px-3 max-sm:py-2 max-sm:text-xs gap-2 ">
                     Menu
-                </button>
+                </a>
 
                 <!-- Cart Component -->
-                <div x-data="{ open: false }">
+                <div x-data="{ open: false }" x-cloak>
                     <button @click="open = true"
                         class="flex items-center justify-center gap-2 bg-black text-white px-5 py-3 rounded-lg shadow-sm transition hover:bg-gray-900 max-sm:px-3 max-sm:py-2 max-sm:text-xs">
                         <!-- Icon Cart -->
@@ -86,7 +94,6 @@
                 Masukkan ID transaksi untuk melihat pesanan Anda.
             </p>
         </div>
-
         <div class="max-w-xl mx-auto mt-6">
             <form action="{{ route('check-transaction') }}" method="POST"
                 class="flex flex-wrap items-center gap-4 sm:flex-nowrap">
@@ -107,45 +114,143 @@
             </form>
             </form>
         </div>
-    </section>
-
-
-
-
-
-    <div id="toast-top-right"
-        class="fixed flex items-center w-full max-w-xs p-4 space-x-4 text-gray-500 bg-white divide-x rtl:divide-x-reverse divide-gray-200 rounded-lg shadow-sm top-20 right-5 dark:text-gray-400 dark:divide-gray-700 dark:bg-gray-800 "
-        style="display: none;" role="alert">
-        <div class="flex">
-            <div class="ms-3 text-sm font-normal">
-                <div class="mb-2 text-sm font-normal">Hi Neil, thanks for sharing your thoughts regarding Flowbite.
+        @if (session('error'))
+            <div
+                class="max-w-md mx-auto mt-8 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-md">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="h-6 w-6 mr-3">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v6m0 4v.01M21 12A9 9 0 113 12a9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="flex-1">{{ session('error') }}</p>
+                    <button onclick="this.parentElement.parentElement.style.display = 'none'"
+                        class="text-red-700 hover:text-red-900 focus:outline-none ml-3">
+                        ✖
+                    </button>
                 </div>
             </div>
-            <button type="button"
-                class="ms-auto -mx-1.5 -my-1.5 bg-white justify-center items-center shrink-0 text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
-                data-dismiss-target="#toast-top-right" aria-label="Close">
-                <span class="sr-only">Close</span>
-                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                    viewBox="0 0 14 14">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                </svg>
-            </button>
+        @endif
+
+    </section>
+
+    <div x-data="$store.modalStore" x-show="showModal" x-transition x-cloak
+        class="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+
+        <div class="relative w-full max-w-md bg-white rounded-2xl shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-5 border-b">
+                <div class="flex items-center space-x-2">
+                    <!-- Icon Keranjang -->
+                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M13 16h-1v-4h-1m0-4h.01M12 2a10 10 0 1010 10A10 10 0 0012 2z" />
+                    </svg>
+                    <h3 class="text-lg font-semibold text-gray-900">Keranjang Kosong</h3>
+                </div>
+                <button @click="$store.modalStore.close()" class="text-gray-400 hover:text-gray-600 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-5 text-sm text-gray-700">
+                Keranjang kosong, silakan tambahkan produk.
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-end px-5 py-4 border-t">
+                <button @click="$store.modalStore.close()"
+                    class="bg-black hover:bg-gray-900 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+                    OK
+                </button>
+            </div>
         </div>
     </div>
 
+    <div x-data="$store.modalStore2" x-show="showModal2" x-transition x-cloak
+        class="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
 
+        <div class="relative w-full max-w-md bg-white rounded-2xl shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-5 border-b">
+                <div class="flex items-center space-x-3">
+                    <!-- Ikon user warning -->
+                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M13 16h-1v-4h-1m0-4h.01M12 2a10 10 0 1010 10A10 10 0 0012 2z" />
+                    </svg>
+                    <h3 class="text-lg font-semibold text-gray-900">Masukkan Nama</h3>
+                </div>
+                <button @click="$store.modalStore2.close()" class="text-gray-400 hover:text-gray-600 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
 
+            <!-- Body -->
+            <div class="p-5 text-sm text-gray-700">
+                Isi Nama yang benar untuk memudahkan kami dalam menghubungi Anda.
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-end px-5 py-4 border-t">
+                <button @click="$store.modalStore2.close()"
+                    class="bg-black hover:bg-gray-900 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div x-data="$store.modalStore3" x-show="showModal3" x-transition x-cloak
+        class="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+
+        <div class="relative w-full max-w-md bg-white rounded-2xl shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-5 border-b">
+                <div class="flex items-center space-x-3">
+                    <!-- Ikon user warning -->
+                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M13 16h-1v-4h-1m0-4h.01M12 2a10 10 0 1010 10A10 10 0 0012 2z" />
+                    </svg>
+                    <h3 class="text-lg font-semibold text-gray-900">Stok Kosong</h3>
+                </div>
+                <button @click="$store.modalStore3.close()" class="text-gray-400 hover:text-gray-600 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-5 text-sm text-gray-700">
+                <p class="text-gray-500" x-text="$store.modalStore3.message"></p>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-end px-5 py-4 border-t">
+                <button @click="$store.modalStore3.close()"
+                    class="bg-black hover:bg-gray-900 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
     <!-- End Call to Action Component-->
 
     <!-- Product List Component -->
-
     @livewire('menu-web')
-
     <!-- End Product List Component -->
 
     <!-- Footer-->
-    <button id="playButton">Play Notification</button>
     <footer class="bg-gray-50 dark:bg-gray-900">
         <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8">
             <div class="sm:flex sm:items-center sm:justify-between">
@@ -162,18 +267,117 @@
     <!-- End Footer-->
     @livewireScripts
 </body>
-<script>
-    // Create an audio object
-    var audio = new Audio('../audio/notification.mp3');
 
-    window.addEventListener('showAlert', event => {
-        // Menampilkan pesan alert
-        const alertElement = document.getElementById('toast-top-right');
-        audio.play().catch(function(error) {
-            console.log('Error playing audio:', error);
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+    const notyfRight = new Notyf({
+        duration: 3000,
+        position: {
+            x: 'right',
+            y: 'top',
+        },
+        types: [{
+                type: 'warning',
+                background: 'orange',
+                icon: {
+                    className: 'material-icons',
+                    tagName: 'i',
+                    text: 'warning'
+                }
+            },
+            {
+                type: 'error',
+                background: 'indianred',
+                duration: 5000,
+                dismissible: true
+            }
+        ]
+    });
+
+    const notyfLeft = new Notyf({
+        duration: 3000,
+        position: {
+            x: 'left',
+            y: 'top',
+        },
+        types: [{
+                type: 'warning',
+                background: 'orange',
+                icon: {
+                    className: 'material-icons',
+                    tagName: 'i',
+                    text: 'warning'
+                }
+            },
+            {
+                type: 'error',
+                background: 'indianred',
+                duration: 5000,
+                dismissible: true
+            }
+        ]
+    });
+
+    window.addEventListener('showAlert_Added', event => {
+        notyfRight.success('Produk Berhasil Ditambahkan!');
+
+    });
+
+    window.addEventListener('showAlert_stock', event => {
+        notyfRight.error('Stok tidak mencukupi!');
+    });
+
+    window.addEventListener('showAlert_Remove', event => {
+        notyfLeft.error('🗑️ Produk Telah Dihapus!');
+    });
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.store('modalStore', {
+            showModal: false,
+            open() {
+                this.showModal = true;
+            },
+            close() {
+                this.showModal = false;
+            }
         });
-        // Tampilkan alert
-        alertElement.style.display = 'block';
+    });
+    document.addEventListener('alpine:init', () => {
+        Alpine.store('modalStore2', {
+            showModal2: false,
+            open() {
+                this.showModal2 = true;
+            },
+            close() {
+                this.showModal2 = false;
+            }
+        });
+    });
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.store('modalStore3', {
+            showModal3: false,
+            open(message = '') {
+                this.message = message;
+                this.showModal3 = true;
+            },
+            close() {
+                this.showModal3 = false;
+                this.message = '';
+            }
+        });
+    });
+
+    window.addEventListener('showAlert_keranjang_kosong', () => {
+        Alpine.store('modalStore').open();
+    });
+
+    window.addEventListener('showAlert_keranjang_kosong2', () => {
+        Alpine.store('modalStore2').open();
+    });
+
+    window.addEventListener('showAlert_stok_kurang', () => {
+        Alpine.store('modalStore3').open(event.detail.message);
     });
 </script>
 

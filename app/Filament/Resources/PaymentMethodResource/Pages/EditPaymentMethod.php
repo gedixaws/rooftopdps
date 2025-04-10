@@ -16,4 +16,9 @@ class EditPaymentMethod extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function afterSave(): void
+    {
+        $this->redirect($this->getResource()::getUrl('index'));
+    }
 }

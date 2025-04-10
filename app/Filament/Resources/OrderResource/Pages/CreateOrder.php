@@ -4,6 +4,8 @@ namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Models\User;
 use Filament\Actions;
+use App\Models\Product;
+use App\Models\OrderProduct;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use App\Filament\Resources\OrderResource;
@@ -13,10 +15,11 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateOrder extends CreateRecord
 {
     protected static string $resource = OrderResource::class;
-    public function afterCreate(): void
+
+    protected function getCreatedNotification(): ?Notification
     {
-        
-        Notification::make()
+
+        $notification = Notification::make()
             ->title("Pesanan Baru!")
             ->body("Pesanan " . $this->record->transaction_id . " telah dibuat.")
             ->actions([
@@ -25,6 +28,26 @@ class CreateOrder extends CreateRecord
                     ->markAsRead()
             ])
             ->sendToDatabase(auth()->user());
-            $this->dispatch('notify');
+
+
+        $this->dispatch('play-notification-sound');
+        return $notification;
+    }
+    
+    protected function getRedirectUrl(): string
+    {
+        return '#';
+    }
+
+    public function afterCreate(): void
+    {
+        $orderProducts = OrderProduct::where("order_id", $this->record->id)->get();
+
+        foreach ($orderProducts as $orderProduct) {
+            $product = Product::find($orderProduct->product_id);
+            if ($product) {
+                $product->decrement('stock', $orderProduct->quantity);
+            }
+        }
     }
 }

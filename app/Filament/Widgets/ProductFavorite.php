@@ -16,7 +16,13 @@ class ProductFavorite extends BaseWidget
     public function table(Table $table): Table
     {
         $productQuery = Product::query()
-            ->withCount('orderProducts')
+            ->withCount([
+                'orderProducts as order_products_count' => function ($query) {
+                    $query->whereHas('order', function ($q) {
+                        $q->where('status', 'paid'); // Hanya hitung produk dari pesanan berstatus "paid"
+                    });
+                }
+            ])
             ->orderByDesc('order_products_count')
             ->take(10);
 

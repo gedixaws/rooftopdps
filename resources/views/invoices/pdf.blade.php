@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice #{{ $order->id }}</title>
+    <title>Invoice {{ $order->transaction_id }}</title>
     <style>
         /* Reset dan Umum */
         body {
@@ -71,7 +71,7 @@
         .print-button {
             display: block;
             width: 100%;
-            background: #007bff;
+            background: #000000;
             color: white;
             padding: 10px;
             text-align: center;
@@ -82,7 +82,7 @@
         }
 
         .print-button:hover {
-            background: #0056b3;
+            background: #333333;
         }
 
         /* Mode Cetak */
@@ -110,15 +110,16 @@
         <!-- Header -->
         <div class="header">
             <div>
-                <h1>Invoice #{{ $order->id }}</h1>
-                <p><strong>Tanggal:</strong> {{ $order->created_at->format('d M Y') }}</p>
-                <p><strong>Pelanggan:</strong> {{ $order->customer_name }}</p>
+                <img src="{{ asset('../images/rooftop.png') }}" alt="Logo" style="height: 60px; margin-bottom: 10px;">
+                <h1>Invoice {{ $order->transaction_id }}</h1>
+                <p><strong>Tanggal:</strong> {{ $order->created_at->format('d F Y H:i') }}</p>
+                <p><strong>Pelanggan:</strong> {{ Str::before($order->name, '-') }}</p>
             </div>
             <div class="info">
-                <p><strong>Nama Toko</strong></p>
-                <p>Jl. Contoh No. 123, Kota</p>
-                <p>Instagram: <a href="https://instagram.com/toko" target="_blank">@toko</a></p>
-                <p>WiFi: <strong>NamaWiFi</strong> | Password: <strong>12345678</strong></p>
+                <p><strong>Rooftop Denpasar</strong></p>
+                <p>Pemogan, Denpasar Selatan, Denpasar City, Bali 8011</p>
+                <p>Instagram: <a href="https://www.instagram.com/rooftop.denpasar" target="_blank">@rooftop.denpasar</a></p>
+                <p>WiFi: <strong>Rooftop</strong> | Password: <strong>NakKodya</strong></p>
             </div>
         </div>
 
@@ -127,18 +128,19 @@
             <thead>
                 <tr>
                     <th>Produk</th>
+                    <th>Varian / Ukuran</th>
                     <th>Jumlah</th>
-                    <th>Harga</th>
+                    <th>Harga Satuan</th>
                     <th>Total</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($order->orderProducts as $item)
+                @foreach ($order->orderProducts as $orderProduct)
                 <tr>
-                    <td>{{ $item->product->product_name }}</td>
-                    <td>{{ $item->quantity }}</td>
-                    <td>Rp {{ number_format($item->product->price, 0, ',', '.') }}</td>
-                    <td>Rp {{ number_format($item->quantity * $item->product->price, 0, ',', '.') }}</td>
+                    <td>{{ $orderProduct->product->product_name }}</td>
+                    <td>{{ $orderProduct->quantity  }}</td>
+                    <td>Rp {{ number_format($orderProduct->unit_price, 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($orderProduct->quantity * $orderProduct->unit_price, 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
             </tbody>

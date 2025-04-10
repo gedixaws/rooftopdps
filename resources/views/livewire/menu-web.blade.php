@@ -25,15 +25,19 @@
                                             loading="lazy">
                                     </div>
                                     <div class="p-3 text-center">
-                                        <p class="text-gray-500 text-xs">Stock: {{ $food->product->stock ?? 0 }}</p>
+                                        <livewire:product-stock :productId="$food->product->id" />
+                                        {{-- <p class="text-gray-500 text-xs">Stock: {{ $food->product->stock ?? 0 }}</p> --}}
                                         <h2 class="text-sm font-semibold mt-1">{{ $variant->name }}</h2>
                                         <p class="text-lg font-bold text-gray-800 mt-2">
                                             Rp{{ number_format($variant->price, 0, ',', '.') }}
                                         </p>
                                         <button wire:click="addToCart('food', {{ $food->id }}, {{ $variant->id }})"
-                                            class="mt-2 w-full border border-gray-800 text-gray-800 text-sm py-1 rounded-lg hover:bg-gray-800 hover:text-white transition">
+                                            class="mt-2 w-full border border-gray-800 text-gray-800 text-sm py-1 rounded-lg hover:bg-gray-800 hover:text-white transition disabled:bg-gray-400 disabled:text-gray-600 disabled:cursor-not-allowed"
+                                            @if(($food->product->stock ?? 0) <= 0) disabled @endif>
                                             Add to Cart
                                         </button>
+
+
                                     </div>
                                 </div>
                             @endforeach
@@ -45,13 +49,15 @@
                                         alt="{{ $food->name }}" class="w-full h-32 object-contain" loading="lazy">
                                 </div>
                                 <div class="p-3 text-center">
-                                    <p class="text-gray-500 text-xs">Stock: {{ $food->product->stock ?? 0 }}</p>
+                                    <livewire:product-stock :productId="$food->product->id" />
+                                    {{-- <p class="text-gray-500 text-xs">Stock: {{ $food->product->stock ?? 0 }}</p> --}}
                                     <h2 class="text-sm font-semibold mt-1">{{ $food->name }}</h2>
                                     <p class="text-lg font-bold text-gray-800 mt-2">
                                         Rp{{ number_format($food->price, 0, ',', '.') }}
                                     </p>
                                     <button wire:click.prevent="addToCart('food', {{ $food->id }})"
-                                        class="mt-2 w-full border border-gray-800 text-gray-800 text-sm py-1 rounded-lg hover:bg-gray-800 hover:text-white transition">
+                                        class="mt-2 w-full border border-gray-800 text-gray-800 text-sm py-1 rounded-lg hover:bg-gray-800 hover:text-white transition disabled:bg-gray-400 disabled:text-gray-600 disabled:cursor-not-allowed"
+                                        @if(($food->product->stock ?? 0) <= 0) disabled @endif>
                                         Add to Cart
                                     </button>
                                 </div>
@@ -71,8 +77,8 @@
                                             loading="lazy">
                                     </div>
                                     <div class="p-3 text-center">
-                                        <p class="text-gray-500 text-xs">Stock: {{ $drink->product->stock ?? 0 }}
-                                        </p>
+                                        <livewire:product-stock :productId="$drink->product->id" />
+                                        {{-- <p class="text-gray-500 text-xs">Stock: {{ $drink->product->stock ?? 0 }}</p> --}}
                                         <h2 class="text-sm font-semibold mt-1">{{ $drink->name }} -
                                             {{ $size->size }}</h2>
                                         <p class="text-lg font-bold text-gray-800 mt-2">
@@ -80,7 +86,8 @@
                                         </p>
                                         <button
                                             wire:click="addToCart('drink', {{ $drink->id }}, {{ $size->id }})"
-                                            class="mt-2 w-full border border-gray-800 text-gray-800 text-sm py-1 rounded-lg hover:bg-gray-800 hover:text-white transition">
+                                            class="mt-2 w-full border border-gray-800 text-gray-800 text-sm py-1 rounded-lg hover:bg-gray-800 hover:text-white transition disabled:bg-gray-400 disabled:text-gray-600 disabled:cursor-not-allowed"
+                                            @if(($drink->product->stock ?? 0) <= 0) disabled @endif>
                                             Add to Cart
                                         </button>
                                     </div>
@@ -94,13 +101,15 @@
                                         alt="{{ $drink->name }}" class="w-full h-32 object-contain" loading="lazy">
                                 </div>
                                 <div class="p-3 text-center">
-                                    <p class="text-gray-500 text-xs">Stock: {{ $drink->product->stock ?? 0 }}</p>
+                                    <livewire:product-stock :productId="$drink->product->id" />
+                                    {{-- <p class="text-gray-500 text-xs">Stock: {{ $drink->product->stock ?? 0 }}</p> --}}
                                     <h2 class="text-sm font-semibold mt-1">{{ $drink->name }}</h2>
                                     <p class="text-lg font-bold text-gray-800 mt-2">
                                         Rp{{ number_format($drink->price, 0, ',', '.') }}
                                     </p>
                                     <button wire:click="addToCart('drink', {{ $drink->id }})"
-                                        class="mt-2 w-full border border-gray-800 text-gray-800 text-sm py-1 rounded-lg hover:bg-gray-800 hover:text-white transition">
+                                        class="mt-2 w-full border border-gray-800 text-gray-800 text-sm py-1 rounded-lg hover:bg-gray-800 hover:text-white transition disabled:bg-gray-400 disabled:text-gray-600 disabled:cursor-not-allowed"
+                                        @if(($drink->product->stock ?? 0) <= 0) disabled @endif>
                                         Add to Cart
                                     </button>
                                 </div>
@@ -110,8 +119,8 @@
                 </div>
             </div>
         @endforeach
-      
+    
     </div>
     <!-- End Product List Component -->
- 
+
 </div>

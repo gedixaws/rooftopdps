@@ -10,11 +10,12 @@ class OrderProductObserver
     /**
      * Handle the OrderProduct "created" event.
      */
-    public function created(OrderProduct $orderProduct): void
-    {
-        $product = Product::find($orderProduct->product_id);
-        $product->decrement('stock', $orderProduct->quantity);
-    }
+    
+    // public function created(OrderProduct $orderProduct): void
+    // {
+    //     $product = Product::find($orderProduct->product_id);
+    //     $product->decrement('stock', $orderProduct->quantity);
+    // }
 
     /**
      * Handle the OrderProduct "updated" event.
@@ -34,11 +35,12 @@ class OrderProductObserver
     /**
      * Handle the OrderProduct "deleted" event.
      */
-    public function deleted(OrderProduct $orderProduct): void
-    {
-        $product = Product::find($orderProduct->product_id);
-        $product->increment('stock', $orderProduct->quantity);
-    }
+    
+    // public function deleted(OrderProduct $orderProduct): void
+    // {
+    //     $product = Product::find($orderProduct->product_id);
+    //     $product->increment('stock', $orderProduct->quantity);
+    // }
 
     /**
      * Handle the OrderProduct "restored" event.

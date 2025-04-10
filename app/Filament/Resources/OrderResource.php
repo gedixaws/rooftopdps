@@ -19,7 +19,9 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Repeater;
 use Filament\Notifications\Notification;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Filters\TernaryFilter;
 use App\Filament\Resources\OrderResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\OrderResource\RelationManagers;
@@ -47,7 +49,8 @@ class OrderResource extends Resource
                         Forms\Components\TextInput::make('name')
                             ->label('Nama Pelanggan')
                             ->required()
-                            ->maxLength(50),
+                            ->maxLength(50)
+                            ->disabled(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
                     ])
                 ]),
 
@@ -100,9 +103,8 @@ class OrderResource extends Resource
 
                                     // **🔹 Tambahkan pemanggilan update total price DI AKHIR**
                                     self::updateTotalPrice($get, $set);
-                                }),
-
-
+                                })
+                                ->disabled(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
 
                             Forms\Components\Select::make('food_variant_id')
                                 ->label('Varian Makanan')
@@ -121,7 +123,8 @@ class OrderResource extends Resource
                                     }
 
                                     self::updateTotalPrice($get, $set);
-                                }),
+                                })
+                                ->disabled(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
 
                             Forms\Components\Select::make('drink_size_id')
                                 ->label('Drink Size')
@@ -141,7 +144,8 @@ class OrderResource extends Resource
                                     }
 
                                     self::updateTotalPrice($get, $set);
-                                }),
+                                })
+                                ->disabled(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
 
                             Forms\Components\TextInput::make('quantity')
                                 ->label('Jumlah')
@@ -166,12 +170,18 @@ class OrderResource extends Resource
                                     }
 
                                     self::updateTotalPrice($get, $set);
-                                }),
+                                })
+                                ->disabled(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
 
                             Forms\Components\TextInput::make('stock')
                                 ->label('Stock')
                                 ->readOnly()
-                                ->numeric(),
+                                ->numeric()
+                                ->afterStateHydrated(function (Set $set, Get $get) {
+                                    $product = Product::find($get('product_id'));
+                                    $set('stock', $product?->stock ?? 0);
+                                })
+                                ->hidden(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
 
                             Forms\Components\TextInput::make('unit_price')
                                 ->label('Harga Satuan')
@@ -220,7 +230,8 @@ class OrderResource extends Resource
                                     $set('change_amount', 0);
                                 }
                                 $set('is_cash', $paymentMethod?->is_cash ?? false);
-                            }),
+                            })
+                            ->disabled(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
 
                         Forms\Components\Hidden::make('is_cash')->dehydrated(),
 
@@ -235,7 +246,21 @@ class OrderResource extends Resource
                             ->numeric()
                             ->label('Kembalian')
                             ->readOnly(),
+
+                        Forms\Components\TextInput::make('status')
+                            ->label('Status')
+                            ->default('paid')
+                            ->dehydrated()
+                            ->hidden(),
+
+                        Forms\Components\Hidden::make('status')
+                            ->default('paid')
+                            ->dehydrated(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\CreateRecord),
                     ]),
+                    Forms\Components\Toggle::make('is_active')
+                        ->label('Tampilkan di List')
+                        ->default(true)
+                        ->visible(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
                 ]),
             ]);
     }
@@ -245,14 +270,38 @@ class OrderResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('transaction_id')->label('Transaction ID')->sortable(),
-                Tables\Columns\TextColumn::make('name')->label('Customer')->sortable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Customer')
+                    ->sortable()
+                    ->formatStateUsing(fn($state) => Str::before($state, '-')),
                 Tables\Columns\TextColumn::make('total_price')->label('Total Harga')->money('IDR')->sortable(),
                 Tables\Columns\TextColumn::make('paymentMethod.name')->label('Metode Pembayaran')->sortable(),
+                Tables\Columns\TextColumn::make('status')->label('Status')->sortable()
+                    ->badge()
+                    ->colors([
+                        'danger' => 'failed',
+                        'warning' => 'pending',
+                        'success' => 'paid',
+                    ]),
                 Tables\Columns\TextColumn::make('created_at')->label('Dipesan Pada')->sortable()->dateTime(),
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->label('Filter Status')
+                    ->options([
+                        'paid' => 'Paid',
+                        'pending' => 'Pending',
+                        'failed' => 'Failed',
+                    ])
+                    ->default('paid'), // Default menampilkan hanya "paid"
+
+                    TernaryFilter::make('is_active')
+                    ->label('Belum Diantarkan')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Tidak Aktif')
+                    ->default(true),
             ])
+
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
@@ -293,7 +342,7 @@ class OrderResource extends Resource
         foreach ($items as $item) {
             // Ambil harga yang sudah tersimpan di dalam field 'price'
             $price = $item['unit_price'] ?? 0;
-            $quantity = $item['quantity'] ?? 1;
+            $quantity = intval($item['quantity']) ?? 1;
 
             $total += $price * $quantity;
         }
@@ -313,103 +362,10 @@ class OrderResource extends Resource
         $set('total_price', $totalPrice);
     }
 
-    // public static function getItemsRepeater(): Repeater
-    // {
-    //     return Repeater::make('orderProducts')
-    //         ->relationship()
-    //         ->live()
-    //         ->columns([
-    //             'md' => 10,
-    //         ])
-    //         ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
-    //             self::updateTotalPrice($get, $set);
-    //         })
-    //         ->schema([
-    //             Forms\Components\Select::make('product_id')
-    //                 ->label('Produk')
-    //                 ->required()
-    //                 ->options(Product::query()->where('stock', '>', 1)->pluck('name', 'id'))
-    //                 ->columnSpan([
-    //                     'md' => 5
-    //                 ])
-    //                 ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get, $state) {
-    //                     $product = Product::find($state);
-    //                     $set('unit_price', $product->price ?? 0);
-    //                     $set('stock', $product->stock ?? 0);
-    //                 })
-    //                 ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-    //                     $product = Product::find($state);
-    //                     $set('unit_price', $product->price ?? 0);
-    //                     $set('stock', $product->stock ?? 0);
-    //                     $quantity = $get('quantity' ?? 1);
-    //                     $stock = $get('stock');
-    //                     self::updateTotalPrice($get, $set);
-    //                 })
-    //                 ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
-    //             Forms\Components\Select::make('serving_type')
-    //                 ->required()
-    //                 ->options([
-    //                     'hot' => 'Hot',
-    //                     'cold' => 'Cold',
-    //                 ])
-    //                 ->columnSpan([
-    //                     'md' => 5
-    //                 ]),
-    //             Forms\Components\TextInput::make('quantity')
-    //                 ->required()
-    //                 ->numeric()
-    //                 ->default(1)
-    //                 ->minValue(1)
-    //                 ->columnSpan([
-    //                     'md' => 1
-    //                 ])
-    //                 ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-    //                     $stock = $get('stock');
-    //                     if ($state > $stock) {
-    //                         $set('quantity', $stock);
-    //                         Notification::make()
-    //                             ->title('Stok Tidak Mencukupi')
-    //                             ->warning()
-    //                             ->send();
-    //                     }
 
-    //                     self::updateTotalPrice($get, $set);
-    //                 }),
-    //             Forms\Components\TextInput::make('stock')
-    //                 ->required()
-    //                 ->numeric()
-    //                 ->readOnly()
-    //                 ->columnSpan([
-    //                     'md' => 1
-    //                 ]),
-    //             Forms\Components\TextInput::make('unit_price')
-    //                 ->label('Harga Saat ini')
-    //                 ->required()
-    //                 ->numeric()
-    //                 ->readOnly()
-    //                 ->columnSpan([
-    //                     'md' => 3
-    //                 ]),
-    //         ]);
-    // }
-
-    // public static function updateTotalPrice(Forms\Get $get, Forms\Set $set): void
-    // {
-    // $selectedProducts = collect($get('orderProducts'))->filter(fn($item) => !empty($item['product_id']) && !empty($item['quantity']));
-
-    // $prices = Product::find($selectedProducts->pluck('product_id'))->pluck('price', 'id');
-    // $total = $selectedProducts->reduce(function ($total, $product) use ($prices) {
-    //     return $total + ($prices[$product['product_id']] * $product['quantity']);
-    // }, 0);
-
-    // $set('total_price', $total);
-    // }
-
-    // protected static function updateExchangePaid(Forms\Get $get, Forms\Set $set): void
-    // {
-    //     $paidAmount = (int) $get('paid_amount') ?? 0;
-    //     $totalPrice = (int) $get('total_price') ?? 0;
-    //     $exchangePaid = $paidAmount - $totalPrice;
-    //     $set('change_amount', $exchangePaid);
-    // }
+    public static function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['status'] = $data['status'] ?? 'paid';
+        return $data;
+    }
 }

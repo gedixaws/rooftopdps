@@ -35,16 +35,21 @@ class MenuWeb extends Component
 
         $cart = session()->get('cart', []);
 
+
+
         if ($type === 'food') {
             $product = Food::with('product')->find($productId);
             if (!$product) return;
+
+            $stock = $product->product->stock ?? $product->stock ?? 0; // Ambil stok produk makanan
+
 
             if ($variantOrSizeId) {
                 $variant = FoodVariant::find($variantOrSizeId);
                 if (!$variant) return;
 
                 $itemId = "variant_{$variant->id}";
-                $name = "{$product->name} - {$variant->name}";
+                $name = "{$product->name}";
                 $price = $variant->price;
             } else {
                 $itemId = "food_{$product->id}";
@@ -52,31 +57,11 @@ class MenuWeb extends Component
                 $price = $product->product->price ?? $product->price ?? 0;
             }
 
-            $cart[$itemId] = [
-                'id' => $product->product->id ?? $product->id,
-                'name' => $name,
-                'price' => $price,
-                'quantity' => ($cart[$itemId]['quantity'] ?? 0) + 1,
-                'variant_id' => $variantOrSizeId ?? null,
-                'size_id' => null,
-                'image' => $product->product->image_url ?? asset('default.jpg'),
-            ];
-        } else {
-
-            $product = Drink::with('product')->find($productId);
-            if (!$product) return;
-
-            if ($variantOrSizeId) {
-                $size = DrinkSize::find($variantOrSizeId);
-                if (!$size) return;
-
-                $itemId = "size_{$size->id}";
-                $name = "{$product->name} - {$size->size}";
-                $price = $size->price;
-            } else {
-                $itemId = "drink_{$product->id}";
-                $name = $product->name;
-                $price = $product->product->price ?? $product->price ?? 0;
+            // Cek stok sebelum menambahkan ke keranjang
+            $cartQuantity = $cart[$itemId]['quantity'] ?? 0;
+            if ($cartQuantity >= $stock) {
+                $this->dispatch('showAlert_stock');
+                return;
             }
 
             $cart[$itemId] = [
@@ -84,15 +69,52 @@ class MenuWeb extends Component
                 'name' => $name,
                 'price' => $price,
                 'quantity' => ($cart[$itemId]['quantity'] ?? 0) + 1,
-                'variant_id' => null,
-                'size_id' => $variantOrSizeId ?? null,
-                'image' => $product->product->image_url ?? asset('default.jpg'),
+                'food_variant_id' => $variantOrSizeId ?? null,
+                'drink_size_id' => null,
+            ];
+
+
+        } else {
+
+            $product = Drink::with('product')->find($productId);
+            if (!$product) return;
+
+            $stock = $product->product->stock ?? $product->stock ?? 0;
+
+            if ($variantOrSizeId) {
+                $size = DrinkSize::find($variantOrSizeId);
+                if (!$size) return;
+
+                $itemId = "size_{$size->id}";
+                $name = "{$product->name}";
+                $price = $size->price;
+            } else {
+                $itemId = "drink_{$product->id}";
+                $name = $product->name;
+                $price = $product->product->price ?? $product->price ?? 0;
+            }
+
+            // Cek stok sebelum menambahkan ke keranjang
+            $cartQuantity = $cart[$itemId]['quantity'] ?? 0;
+            if ($cartQuantity >= $stock) {
+                $this->dispatch('showAlert_stock');
+                return;
+            }
+
+            // Tambahkan ke keranjang jika stok masih ada
+            $cart[$itemId] = [
+                'id' => $product->product->id ?? $product->id,
+                'name' => $name,
+                'price' => $price,
+                'quantity' => ($cart[$itemId]['quantity'] ?? 0) + 1,
+                'food_variant_id' => null,
+                'drink_size_id' => $variantOrSizeId ?? null,
             ];
         }
-        $this->alert = "Produk berhasil ditambahkan ke keranjang!";
+
         session()->put('cart', $cart); // Simpan cart ke session
         $this->dispatch('cartUpdated'); // Trigger Livewire update
-        $this->dispatch('showAlert', ['message' => $this->alert]);
+        $this->dispatch('showAlert_Added');
     }
 
     public function updateCart()

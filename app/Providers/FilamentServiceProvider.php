@@ -4,8 +4,11 @@ namespace App\Providers;
 
 use Livewire\Livewire;
 use Filament\Facades\Filament;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use App\Http\Livewire\NotificationSound;
+use Filament\Support\Facades\FilamentView;
 
 class FilamentServiceProvider extends ServiceProvider
 {
@@ -22,29 +25,14 @@ class FilamentServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Filament::serving(function () {
-            Filament::registerRenderHook('scripts.end', function () {
-                return <<<'HTML'
-                <script>
-                    document.addEventListener("DOMContentLoaded", function() {
-                        function playNotificationSound() {
-                            let audio = new Audio('../audio/notification.mp3');
-                            audio.play();
-                        }
-    
-                        // Tunggu Livewire ter-load sepenuhnya
-                        document.addEventListener("livewire:load", () => {
-                            // Mendengarkan event 'play-notification-sound' dari Livewire
-                            window.addEventListener('play-notification-sound', function() {
-                                console.log("Notification sound triggered!"); // Debugging
-                                playNotificationSound();
-                            });
-                        });
-                    });
-                </script>
-                HTML;
-            });
-        });
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::BODY_START,
+            fn (): string => Blade::render('@livewire(\'stock-notification\')'),
+        );
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::BODY_START,
+            fn (): string => Blade::render('@livewire(\'ping-admin\')'),
+        );
     }
     
 }

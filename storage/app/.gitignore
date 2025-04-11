@@ -1,6 +1,4 @@
 *
 !private/
 !public/
-!public/products/
-!public/products/*.png
 !.gitignore

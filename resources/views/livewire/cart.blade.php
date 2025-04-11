@@ -1,14 +1,13 @@
 <div>
-
     <div class="p-4 overflow-y-auto h-[80%]">
         @foreach ($cart as $index => $item)
             <div class="border-b py-2">
                 <p class="font-semibold">{{ $item['name'] }}
-                    @if (!empty($item['variant_id']))
-                        - {{ \App\Models\FoodVariant::find($item['variant_id'])->name }}
+                    @if (!empty($item['food_variant_id']))
+                        - {{ \App\Models\FoodVariant::find($item['food_variant_id'])->name }}
                     @endif
-                    @if (!empty($item['size_id']))
-                        - {{ \App\Models\DrinkSize::find($item['size_id'])->size }}
+                    @if (!empty($item['drink_size_id']))
+                        - {{ \App\Models\DrinkSize::find($item['drink_size_id'])->size }}
                     @endif
                 </p>
                 <p class="text-gray-600">Rp{{ number_format($item['price'], 0, ',', '.') }}</p>

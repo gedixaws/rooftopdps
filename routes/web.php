@@ -18,7 +18,6 @@ Route::get('/transaction/{slug}', [TransactionController::class, 'show'])
 
 Route::get('/invoice/{orderId}', [InvoiceController::class, 'generatePDF'])->name('invoice.pdf');
 
-
 Route::get('/clear-cart/{orderId}', function ($orderId) {
 
     // Pastikan session dimulai terlebih dahulu

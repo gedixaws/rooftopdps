@@ -26,7 +26,11 @@ class StockNotification extends Component
 
     public function checkStock()
     {
-        
+
+        if (!auth()->check() || !auth()->user()) {
+            return;
+        }
+
         $this->products = Product::where('stock', '<', 10)->get();
 
         // Ambil daftar produk yang sudah pernah dikirim notifikasi dari cache

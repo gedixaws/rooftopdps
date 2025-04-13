@@ -57,6 +57,7 @@ class DrinkSizeResource extends Resource
                 ->sortable()
                 ->searchable(),
                 Tables\Columns\TextColumn::make('price')
+                ->money('IDR')
                 ->sortable(),
             ])
             ->filters([

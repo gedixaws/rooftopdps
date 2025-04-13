@@ -50,7 +50,8 @@ class OrderResource extends Resource
                             ->label('Nama Pelanggan')
                             ->required()
                             ->maxLength(50)
-                            ->disabled(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
+                            ->disabled(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord)
+                            ->formatStateUsing(fn($state) => Str::before($state, '-')),
                     ])
                 ]),
 

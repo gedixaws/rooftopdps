@@ -274,7 +274,7 @@
     </div>
 
     <!-- Transaction Component-->
-    <div id="print-area" class="p-6">
+    <div id="print-area" class="p-6 max-sm:text-xs">
         <div class="hidden print:flex items-center gap-3 mb-4">
             <img src="{{ asset('../images/rooftop.png') }}" alt="Logo" class="h-12">
             <h1 class="text-xl font-bold">ROOFTOP DENPASAR</h1>
@@ -300,7 +300,8 @@
             <p class="mb-2"><strong>Status: </strong> {{ $order->status }}</p>
 
             <h3 class="font-semibold mt-4">Produk yang Dibeli</h3>
-            <table class="w-full mt-2 border border-gray-300">
+            <div class="overflow-x-auto">
+            <table class="w-full mt-2 border border-gray-300 max-sm:text-xs">
                 <thead>
                     <tr class="bg-gray-200">
                         <th class="p-2">Produk</th>
@@ -313,7 +314,7 @@
                 <tbody>
                     @foreach ($order->orderProducts as $orderProduct)
                         <tr class="border-b border-gray-300 text-center">
-                            <td class="p-2">{{ $orderProduct->product->product_name }}</td>
+                            <td class="p-2 text-center">{{ $orderProduct->product->product_name }}</td>
                             <td class="p-2 text-center">
                                 @if ($orderProduct->foodVariant)
                                     {{ $orderProduct->foodVariant->name }}
@@ -333,6 +334,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
 
             <p class="mt-4 text-lg font-semibold">Total: Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
 

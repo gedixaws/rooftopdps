@@ -39,8 +39,13 @@ class ProductResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('food_id')
                             ->label('Food')
-                            ->options(function () {
+                            ->options(function (callable $get) {
                                 $usedFoodIds = Product::whereNotNull('food_id')->pluck('food_id')->toArray();
+                                $currentId = $get('food_id');
+                                if ($currentId) {
+                                    // Biarkan ID yang sedang dipakai tetap bisa muncul
+                                    $usedFoodIds = array_diff($usedFoodIds, [$currentId]);
+                                }
                                 return Food::whereNotIn('id', $usedFoodIds)->pluck('name', 'id');
                             })
                             ->searchable()
@@ -53,8 +58,12 @@ class ProductResource extends Resource
 
                         Forms\Components\Select::make('drink_id')
                             ->label('Drink')
-                            ->options(function () {
+                            ->options(function (callable $get) {
                                 $usedDrinkIds = Product::whereNotNull('drink_id')->pluck('drink_id')->toArray();
+                                $currentId = $get('drink_id');
+                                if ($currentId) {
+                                    $usedDrinkIds = array_diff($usedDrinkIds, [$currentId]);
+                                }
                                 return Drink::whereNotIn('id', $usedDrinkIds)->pluck('name', 'id');
                             })
                             ->searchable()

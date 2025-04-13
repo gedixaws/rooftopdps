@@ -36,7 +36,7 @@ class CreateOrder extends CreateRecord
     
     protected function getRedirectUrl(): string
     {
-        return '#';
+        return $this->getResource()::getUrl('index');
     }
 
     public function afterCreate(): void

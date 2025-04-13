@@ -1,6 +1,8 @@
 <div>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
     <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+
+
     <div wire:poll.10s="checkPing">
         <script>
             document.addEventListener('successPaid', function() {

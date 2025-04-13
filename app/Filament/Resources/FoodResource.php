@@ -7,6 +7,7 @@ use App\Models\Food;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rule;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Clusters\ManagementProducts;
@@ -31,7 +32,10 @@ class FoodResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('name')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->rules(fn ($record) => [
+                        Rule::unique('foods', 'name')->ignore($record?->id),
+                    ]),
                 Forms\Components\TextInput::make('price')
                     ->numeric()
                     ->nullable() // Bisa diisi jika tidak ada variant
@@ -52,6 +56,7 @@ class FoodResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('price') //Harga otomatis dari getPriceAttribute()
                     ->label('Price')
+                    ->money('IDR')
                     ->sortable(),
             ])
             ->filters([

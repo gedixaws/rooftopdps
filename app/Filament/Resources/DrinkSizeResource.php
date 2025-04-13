@@ -13,6 +13,7 @@ use App\Filament\Clusters\ManagementProducts;
 use App\Filament\Resources\DrinkSizeResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\DrinkSizeResource\RelationManagers;
+use Illuminate\Validation\Rule;
 
 class DrinkSizeResource extends Resource
 {
@@ -31,7 +32,14 @@ class DrinkSizeResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('size')
                     ->required()
-                    ->maxLength(50),
+                    ->maxLength(50)
+                    ->rules(function (callable $get, ?DrinkSize $record) {
+                        return [
+                            Rule::unique('drink_sizes', 'size')
+                                ->where('drink_id', $get('drink_id'))
+                                ->ignore($record?->id),
+                        ];
+                    }),
                 Forms\Components\TextInput::make('price')
                     ->numeric()
                     ->required(),
@@ -55,9 +63,7 @@ class DrinkSizeResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

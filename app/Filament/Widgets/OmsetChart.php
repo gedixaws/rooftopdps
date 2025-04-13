@@ -11,7 +11,7 @@ use Filament\Widgets\ChartWidget;
 class OmsetChart extends ChartWidget
 {
     protected static ?string $heading = 'Omset';
-    protected static ?string $pollingInterval = '60s';
+    protected static ?string $pollingInterval = '300s';
     protected static ?int $sort = 1;
     public ?string $filter = 'today';
     protected static string $color = 'success';

@@ -9,6 +9,7 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 
 class StatsOverview extends BaseWidget
 {
+    protected static ?string $pollingInterval = '120s';
     protected function getStats(): array
     {
         $product_count = Product::count();

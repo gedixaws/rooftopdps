@@ -7,6 +7,7 @@ use Filament\Tables;
 use App\Models\Drink;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rule;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Clusters\ManagementProducts;
@@ -30,7 +31,10 @@ class DrinkResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('name')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->rules(fn ($record) => [
+                        Rule::unique('drinks', 'name')->ignore($record?->id),
+                    ]),
                 Forms\Components\TextInput::make('price')
                     ->numeric()
                     ->nullable() // untuk tidak ada ukuran
@@ -51,15 +55,14 @@ class DrinkResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('price') // Harga otomatis dari getPriceAttribute()
                     ->label('Price')
+                    ->money('IDR')
                     ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

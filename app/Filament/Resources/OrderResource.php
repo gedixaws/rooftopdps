@@ -274,8 +274,13 @@ class OrderResource extends Resource
                     ->label('Customer')
                     ->sortable()
                     ->formatStateUsing(fn($state) => Str::before($state, '-')),
-                Tables\Columns\TextColumn::make('total_price')->label('Total Harga')->money('IDR')->sortable(),
-                Tables\Columns\TextColumn::make('paymentMethod.name')->label('Metode Pembayaran')->sortable(),
+                Tables\Columns\TextColumn::make('total_price')
+                    ->label('Total Harga')
+                    ->money('IDR')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('paymentMethod.name')
+                    ->label('Metode Pembayaran')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('status')->label('Status')->sortable()
                     ->badge()
                     ->colors([
@@ -283,7 +288,10 @@ class OrderResource extends Resource
                         'warning' => 'pending',
                         'success' => 'paid',
                     ]),
-                Tables\Columns\TextColumn::make('created_at')->label('Dipesan Pada')->sortable()->dateTime(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dipesan Pada')
+                    ->sortable()
+                    ->dateTime(),
             ])
             ->filters([
                 SelectFilter::make('status')
@@ -295,7 +303,7 @@ class OrderResource extends Resource
                     ])
                     ->default('paid'), // Default menampilkan hanya "paid"
 
-                    TernaryFilter::make('is_active')
+                TernaryFilter::make('is_active')
                     ->label('Belum Diantarkan')
                     ->trueLabel('Aktif')
                     ->falseLabel('Tidak Aktif')

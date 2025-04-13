@@ -11,6 +11,7 @@ class ProductAlert extends BaseWidget
 {
     protected static ?int $sort = 2;
     protected static ?string $heading = 'Produk Hampir Habis';
+    protected static ?string $pollingInterval = '120s';
 
     public function table(Table $table): Table
     {

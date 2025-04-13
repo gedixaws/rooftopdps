@@ -39,7 +39,10 @@ class ProductResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('food_id')
                             ->label('Food')
-                            ->options(Food::pluck('name', 'id'))
+                            ->options(function () {
+                                $usedFoodIds = Product::whereNotNull('food_id')->pluck('food_id')->toArray();
+                                return Food::whereNotIn('id', $usedFoodIds)->pluck('name', 'id');
+                            })
                             ->searchable()
                             ->preload()
                             ->nullable()
@@ -50,7 +53,10 @@ class ProductResource extends Resource
 
                         Forms\Components\Select::make('drink_id')
                             ->label('Drink')
-                            ->options(Drink::pluck('name', 'id'))
+                            ->options(function () {
+                                $usedDrinkIds = Product::whereNotNull('drink_id')->pluck('drink_id')->toArray();
+                                return Drink::whereNotIn('id', $usedDrinkIds)->pluck('name', 'id');
+                            })
                             ->searchable()
                             ->preload()
                             ->nullable()
@@ -89,9 +95,6 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Gambar')
                     ->circular(),
@@ -99,7 +102,10 @@ class ProductResource extends Resource
                     ->label('Product')
                     ->getStateUsing(fn($record) => $record->food?->name ?? $record->drink?->name ?? '-')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable(query: function ($query, $search) {
+                        $query->whereHas('food', fn($q) => $q->where('name', 'like', "%{$search}%"))
+                              ->orWhereHas('drink', fn($q) => $q->where('name', 'like', "%{$search}%"));
+                    }),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Price')
                     ->getStateUsing(fn($record) => $record->food?->price ?? $record->drink?->price ?? '-')

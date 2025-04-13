@@ -12,6 +12,7 @@ class ProductFavorite extends BaseWidget
 
     protected static ?int $sort = 3;
     protected static ?string $heading = 'Produk Favorit';
+    protected static ?string $pollingInterval = '300s';
 
     public function table(Table $table): Table
     {

@@ -8,6 +8,7 @@ use Filament\Forms\Set;
 use App\Models\Category;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rule;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Clusters\ManagementProducts;
@@ -33,7 +34,10 @@ class CategoryResource extends Resource
                     })
                     ->required()
                     ->live(onBlur: true)
-                    ->maxLength(50),
+                    ->maxLength(50)
+                    ->rules(fn ($record) => [
+                        Rule::unique('categories', 'name')->ignore($record?->id),
+                    ]),
                 Forms\Components\TextInput::make('slug')
                     ->required()
                     ->maxLength(255),

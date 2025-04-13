@@ -9,4 +9,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateDrink extends CreateRecord
 {
     protected static string $resource = DrinkResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

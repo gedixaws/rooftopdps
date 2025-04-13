@@ -13,8 +13,7 @@
             },
             types: [{
                 type: 'stockWarning',
-                background: '#fef3c7',
-                className: 'text-black',
+                background: '#1f2937',
                 icon: {
                     className: 'custom-bell-icon',
                     tagName: 'span',

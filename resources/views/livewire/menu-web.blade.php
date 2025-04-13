@@ -27,7 +27,7 @@
                                     <div class="p-3 text-center">
                                         <livewire:product-stock :productId="$food->product->id" />
                                         {{-- <p class="text-gray-500 text-xs">Stock: {{ $food->product->stock ?? 0 }}</p> --}}
-                                        <h2 class="text-sm font-semibold mt-1">{{ $variant->name }}</h2>
+                                        <h2 class="text-sm font-semibold mt-1">{{ $food->name }} - {{ $variant->name }}</h2>
                                         <p class="text-lg font-bold text-gray-800 mt-2">
                                             Rp{{ number_format($variant->price, 0, ',', '.') }}
                                         </p>
@@ -36,7 +36,6 @@
                                             @if(($food->product->stock ?? 0) <= 0) disabled @endif>
                                             Add to Cart
                                         </button>
-
 
                                     </div>
                                 </div>

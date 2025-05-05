@@ -13,7 +13,9 @@ class StatsOverview extends BaseWidget
     protected function getStats(): array
     {
         $product_count = Product::count();
-        $order_count = Order::where('status', 'paid')->count();
+        $order_count = Order::where('status', 'paid')
+                    ->where('is_active', 1)
+                    ->count();
         $omset = Order::where('status', 'paid')->sum('total_price');
 
         return [

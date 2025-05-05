@@ -21,10 +21,18 @@ class MenuWeb extends Component
 
     public function mount()
     {
-        // Ambil semua kategori beserta produk makanan dan minuman terkait
+        // Ambil semua kategori beserta produk makanan dan minuman terkait sekaligus aktif atau tidak
         $this->categories = Category::with([
-            'foods.variants',
-            'drinks.sizes'
+            'foods' => function ($query) {
+                $query->whereHas('product', function ($q) {
+                    $q->where('is_active', true);
+                })->with(['variants', 'product']);
+            },
+            'drinks' => function ($query) {
+                $query->whereHas('product', function ($q) {
+                    $q->where('is_active', true);
+                })->with(['sizes', 'product']);
+            },
         ])->get();
 
         $this->cart = session()->get('cart', []);
@@ -34,8 +42,6 @@ class MenuWeb extends Component
     {
 
         $cart = session()->get('cart', []);
-
-
 
         if ($type === 'food') {
             $product = Food::with('product')->find($productId);
@@ -72,8 +78,6 @@ class MenuWeb extends Component
                 'food_variant_id' => $variantOrSizeId ?? null,
                 'drink_size_id' => null,
             ];
-
-
         } else {
 
             $product = Drink::with('product')->find($productId);

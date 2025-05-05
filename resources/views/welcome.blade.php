@@ -43,7 +43,7 @@
                 </a>
 
                 <!-- Cart Component -->
-                <div x-data="{ open: false }" x-cloak>
+                <div x-data="{ open: false }"  x-effect="document.body.classList.toggle('overflow-hidden', open)" x-cloak>
                     <button @click="open = true"
                         class="flex items-center justify-center gap-2 bg-black text-white px-5 py-3 rounded-lg shadow-sm transition hover:bg-gray-900 max-sm:px-3 max-sm:py-2 max-sm:text-xs">
                         <!-- Icon Cart -->
@@ -65,6 +65,7 @@
                     <!-- Shopping Cart Panel -->
                     <div x-show="open" @click.away="open = false"
                         class="fixed top-0 right-0 w-80 h-full bg-white shadow-lg transform transition-transform"
+                        x-body:enter="overflow-hidden"
                         x-transition:enter="transition ease-out duration-300"
                         x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
                         x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0"

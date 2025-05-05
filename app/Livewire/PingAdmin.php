@@ -13,11 +13,18 @@ class PingAdmin extends Component
     public $shownPing; // untuk melacak yang sudah ditampilkan
     public function mount()
     {
-        $this->checkPing();
+        if (!auth()->check() || !auth()->user()) {
+            return;
+        } else {
+            $this->checkPing();
+        }
     }
 
     public function checkPing(): ?Notification
     {
+          if (!auth()->check() || !auth()->user()) {
+            return null;
+        }
         $ping = Cache::pull('last_user_ping');
 
         if ($ping) {

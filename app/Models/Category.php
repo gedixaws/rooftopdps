@@ -11,9 +11,7 @@ class Category extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'name',
-        'slug'
-
+        'name'
     ];
 
     public function foods()
@@ -26,16 +24,4 @@ class Category extends Model
         return $this->hasMany(Drink::class);
     }
 
-    public static function generateUniqueSlug(string $name): string
-    {
-        $slug = Str::slug($name);
-        $originalSlug = $slug;
-        $counter = 1;
-        while (self::where('slug', $slug)->exists()) {
-            $slug = $originalSlug . '-' . $counter;
-            $counter++;
-        }
-        return $slug;
-    }
-    
 }

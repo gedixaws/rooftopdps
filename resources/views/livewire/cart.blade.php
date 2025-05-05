@@ -1,5 +1,5 @@
 <div>
-    <div class="p-4 overflow-y-auto h-[80%]">
+    <div class="p-4 overflow-y-auto bg-white h-[75vh] max-sm:h-[60vh]">
         @foreach ($cart as $index => $item)
             <div class="border-b py-2">
                 <p class="font-semibold">{{ $item['name'] }}
@@ -28,14 +28,6 @@
         <p class="text-lg font-semibold">Total:
             Rp{{ number_format(collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']), 0, ',', '.') }}</p>
 
-        @error('name')
-            <span class="text-red-500 text-xs">{{ $message }}</span>
-        @enderror
-        <p class="text-sm">Metode Pembayaran: <strong>Midtrans</strong></p>
-        <button wire:click="initiatePayment" class="w-full bg-gray-800 text-white py-2 mt-2 rounded">Checkout</button>
-    </div>
-
-    <div class="p-4 border-t">
         @error('name')
             <span class="text-red-500 text-xs">{{ $message }}</span>
         @enderror

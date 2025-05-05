@@ -23,6 +23,11 @@ class FoodResource extends Resource
 
     protected static ?string $cluster = ManagementProducts::class;
 
+    public static function getNavigationLabel(): string
+    {
+        return 'Foods';
+    }
+
     public static function form(Form $form): Form
     {
         return $form

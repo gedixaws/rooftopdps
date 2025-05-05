@@ -29,18 +29,12 @@ class CategoryResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->afterStateUpdated(function (Set $set, $state){
-                        $set('slug', Category::generateUniqueSlug($state));
-                    })
                     ->required()
                     ->live(onBlur: true)
                     ->maxLength(50)
                     ->rules(fn ($record) => [
                         Rule::unique('categories', 'name')->ignore($record?->id),
                     ]),
-                Forms\Components\TextInput::make('slug')
-                    ->required()
-                    ->maxLength(255),
             ]);
     }
 

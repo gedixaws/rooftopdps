@@ -25,10 +25,10 @@ class FilamentServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        FilamentView::registerRenderHook(
-            PanelsRenderHook::BODY_START,
-            fn (): string => Blade::render('@livewire(\'stock-notification\')'),
-        );
+        // FilamentView::registerRenderHook(
+        //     PanelsRenderHook::BODY_START,
+        //     fn (): string => Blade::render('@livewire(\'stock-notification\')'),
+        // );
         FilamentView::registerRenderHook(
             PanelsRenderHook::BODY_START,
             fn (): string => Blade::render('@livewire(\'ping-admin\')'),

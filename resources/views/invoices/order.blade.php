@@ -76,6 +76,13 @@
             padding-top: 5px;
         }
 
+        .note {
+            text-align: left;
+            border-top: 1px dashed black;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+
         .footer {
             text-align: center;
             font-size: 10px;
@@ -138,7 +145,9 @@
                     </tr>
                 @endforeach
             </tbody>
+            
         </table>
+        <p class="note">Catatan: {{ $order->note }}</p>
 
         <p class="total">Total: Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
 

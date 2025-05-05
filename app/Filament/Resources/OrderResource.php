@@ -66,6 +66,8 @@ class OrderResource extends Resource
                 Forms\Components\Section::make('Produk Dipesan')->schema([
                     Repeater::make('items')
                         ->relationship('orderProducts')
+                        ->label('Pesanan Produk')
+                        ->createItemButtonLabel('Tambah Produk')
                         ->live()
                         ->schema([
                             Forms\Components\Select::make('product_id')
@@ -82,38 +84,43 @@ class OrderResource extends Resource
                                 ->preload()
                                 ->required()
                                 ->reactive()
+                                // Set harga dan stok otomatis saat produk dipilih
                                 ->afterStateUpdated(function (Set $set, Get $get) {
-                                    $product = Product::find($get('product_id'));
+                                    $product = Product::with(['food.variants', 'drink.sizes'])->find($get('product_id'));
 
                                     if (!$product) return;
 
-                                    // Cek apakah memiliki variant atau size
-                                    $hasVariantOrSize = $product?->food?->variants()->exists() || $product?->drink?->sizes()->exists();
+                                    $hasVariantOrSize = ($product->food && $product->food->variants->isNotEmpty()) ||
+                                        ($product->drink && $product->drink->sizes->isNotEmpty());
 
+                                    // Jika produk punya varian atau ukuran, harga tunggu pilihan varian/size
                                     if ($hasVariantOrSize) {
-                                        // Jika ada variant/size, harga akan diatur setelah pemilihan variant/size
                                         $set('unit_price', 0);
                                     } else {
-                                        // Jika tidak ada variant/size, langsung set harga dari produk
+                                        // Jika tidak, langsung pakai harga default dari makanan/minuman
                                         $price = $product?->food?->price ?? $product?->drink?->price ?? 0;
                                         $set('unit_price', $price);
                                     }
 
-                                    // Ambil stock dari product
                                     $set('stock', $product?->stock ?? 0);
 
-                                    // **🔹 Tambahkan pemanggilan update total price DI AKHIR**
                                     self::updateTotalPrice($get, $set);
                                 })
                                 ->disabled(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
 
+                            // Pilih varian makanan jika produk berupa makanan dan punya varian
                             Forms\Components\Select::make('food_variant_id')
                                 ->label('Varian Makanan')
                                 ->options(fn(Get $get) => FoodVariant::where('food_id', Product::find($get('product_id'))?->food_id)->pluck('name', 'id'))
                                 ->searchable()
                                 ->preload()
                                 ->reactive()
-                                ->hidden(fn(Get $get) => Product::find($get('product_id'))?->food_id === null)
+                                // Sembunyikan jika produk bukan makanan atau tidak memiliki varian
+                                ->hidden(function (Get $get) {
+                                    $product = Product::with('food.variants')->find($get('product_id'));
+                                    return !$product?->food || $product->food->variants->isEmpty();
+                                })
+                                // Set harga berdasarkan varian makanan
                                 ->afterStateUpdated(function (Set $set, Get $get) {
                                     $variant = FoodVariant::find($get('food_variant_id'));
                                     if ($variant) {
@@ -127,14 +134,19 @@ class OrderResource extends Resource
                                 })
                                 ->disabled(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
 
+                            // Pilih ukuran minuman jika produk berupa minuman dan punya size
                             Forms\Components\Select::make('drink_size_id')
                                 ->label('Drink Size')
-                                ->options(fn(Get $get) => DrinkSize::where('drink_id', Product::find($get('product_id'))?->drink_id)
-                                    ->pluck('size', 'id'))
+                                ->options(fn(Get $get) => DrinkSize::where('drink_id', Product::find($get('product_id'))?->drink_id)->pluck('size', 'id'))
                                 ->searchable()
                                 ->preload()
                                 ->reactive()
-                                ->hidden(fn(Get $get) => Product::find($get('product_id'))?->drink_id === null)
+                                // Sembunyikan jika produk bukan minuman atau tidak memiliki size
+                                ->hidden(function (Get $get) {
+                                    $product = Product::with('drink.sizes')->find($get('product_id'));
+                                    return !$product?->drink || $product->drink->sizes->isEmpty();
+                                })
+                                // Set harga berdasarkan ukuran minuman
                                 ->afterStateUpdated(function (Set $set, Get $get) {
                                     $size = DrinkSize::find($get('drink_size_id'));
                                     if ($size) {
@@ -147,6 +159,7 @@ class OrderResource extends Resource
                                     self::updateTotalPrice($get, $set);
                                 })
                                 ->disabled(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
+
 
                             Forms\Components\TextInput::make('quantity')
                                 ->label('Jumlah')
@@ -211,6 +224,7 @@ class OrderResource extends Resource
                     Forms\Components\Section::make('Pembayaran')->schema([
                         Forms\Components\Select::make('payment_method_id')
                             ->relationship('paymentMethod', 'name')
+                            ->label('Metode Pembayaran')
                             ->reactive()
                             ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                 $paymentMethod = PaymentMethod::find($state);
@@ -241,6 +255,14 @@ class OrderResource extends Resource
                             ->reactive()
                             ->label('Nominal Bayar')
                             ->readOnly(fn(Get $get) => !$get('is_cash'))
+                            ->rules(function (Get $get) {
+                                return [
+                                    'gte:' . $get('total_price'),
+                                ];
+                            })
+                            ->validationMessages([
+                                'gte' => 'Uang kurang untuk membayar pesanan ini.',
+                            ])
                             ->afterStateUpdated(fn(Set $set, Get $get, $state) => self::updateExchangePaid($get, $set)),
 
                         Forms\Components\TextInput::make('change_amount')
@@ -361,7 +383,11 @@ class OrderResource extends Resource
 
     public static function updateExchangePaid(Get $get, Set $set)
     {
-        $change = max(0, ($get('paid_amount') ?? 0) - ($get('total_price') ?? 0));
+        $paidAmount = (float) ($get('paid_amount') ?? 0);
+        $totalPrice = (float) ($get('total_price') ?? 0);
+
+        $change = max(0, $paidAmount - $totalPrice);
+
         $set('change_amount', $change);
     }
 

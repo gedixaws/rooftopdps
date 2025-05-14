@@ -14,7 +14,8 @@
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {{-- Makanan --}}
                     @foreach ($category->foods->sortBy('id') as $food)
-                        <div wire:key="food-{{ $food->id }}" class="bg-white shadow-md rounded-xl overflow-hidden border">
+                        <div wire:key="food-{{ $food->id }}"
+                            class="bg-white shadow-md rounded-xl overflow-hidden border">
                             <div class="relative p-3">
                                 <img src="{{ $food->product->image_url ?? 'default.jpg' }}" alt="{{ $food->name }}"
                                     class="w-full h-32 object-contain" loading="lazy">
@@ -84,16 +85,18 @@
                                         $price = $food->product->price ?? ($food->price ?? 0);
                                     @endphp
 
-                                    <p class="text-lg font-bold text-gray-800 mt-2">
-                                        Rp{{ number_format($price, 0, ',', '.') }}
-                                    </p>
+                                    <div class="flex flex-col items-center gap-[28px]">
+                                        <p class="text-lg font-bold text-gray-800 mt-2">
+                                            Rp{{ number_format($price, 0, ',', '.') }}
+                                        </p>
 
-                                    <button
-                                        class="font-bold mt-2 w-full border border-gray-800 text-gray-800 text-sm py-1 rounded-lg hover:bg-gray-800 hover:text-white transition disabled:font-medium disabled:bg-white disabled:text-gray-500 disabled:border-gray-300 disabled:cursor-not-allowed"
-                                        wire:click="addToCart('food', {{ $food->id }})"
-                                        @if (($food->product->stock ?? 0) <= 0) disabled @endif>
-                                        Add to Cart
-                                    </button>
+                                        <button
+                                            class="font-bold mt-2 w-full border border-gray-800 text-gray-800 text-sm py-1 rounded-lg hover:bg-gray-800 hover:text-white transition disabled:font-medium disabled:bg-white disabled:text-gray-500 disabled:border-gray-300 disabled:cursor-not-allowed"
+                                            wire:click="addToCart('food', {{ $food->id }})"
+                                            @if (($food->product->stock ?? 0) <= 0) disabled @endif>
+                                            Add to Cart
+                                        </button>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -101,7 +104,8 @@
 
                     {{-- Minuman --}}
                     @foreach ($category->drinks->sortBy('id') as $drink)
-                        <div wire:key="drink-{{ $drink->id }}" class="bg-white shadow-md rounded-xl overflow-hidden border">
+                        <div wire:key="drink-{{ $drink->id }}"
+                            class="bg-white shadow-md rounded-xl overflow-hidden border">
                             <div class="relative p-3">
                                 <img src="{{ $drink->product->image_url ?? 'default.jpg' }}" alt="{{ $drink->name }}"
                                     class="w-full h-32 object-contain" loading="lazy">
@@ -165,6 +169,7 @@
                                         $price = $drink->product->price ?? ($drink->price ?? 0);
                                     @endphp
 
+                                    <div class="flex flex-col items-center gap-[28px]">
                                     <p class="text-lg font-bold text-gray-800 mt-2">
                                         Rp{{ number_format($price, 0, ',', '.') }}
                                     </p>
@@ -175,6 +180,7 @@
                                         @if (($drink->product->stock ?? 0) <= 0) disabled @endif>
                                         Add to Cart
                                     </button>
+                                    </div>
                                 @endif
                             </div>
                         </div>

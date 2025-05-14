@@ -327,9 +327,9 @@ class OrderResource extends Resource
                     ->default('paid'), // Default menampilkan hanya "paid"
 
                 TernaryFilter::make('is_active')
-                    ->label('Belum Diantarkan')
-                    ->trueLabel('Aktif')
-                    ->falseLabel('Tidak Aktif')
+                    ->label('Status')
+                    ->trueLabel('Belum Diantarkan')
+                    ->falseLabel('Sudah Diantarkan')
                     ->default(true),
             ])
 
